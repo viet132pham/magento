@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -112,7 +112,7 @@ class TokenUiComponentProviderTest extends TestCase
             ->with('{"type":"VI","maskedCC":"1111","expirationDate":"11\/2021"}')
             ->willReturn($expected['details']);
 
-        $this->configProvider->expects(self::once())->method('getIcons')->willReturn([]);
+        $this->configProvider->expects(self::once())->method('getIcon')->willReturn([]);
 
         $this->urlBuilder->expects(static::once())
             ->method('getUrl')

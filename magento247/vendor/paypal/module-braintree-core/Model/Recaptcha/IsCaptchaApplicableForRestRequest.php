@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -10,9 +10,17 @@ namespace PayPal\Braintree\Model\Recaptcha;
 use Magento\Framework\Webapi\Rest\Request;
 use Magento\ReCaptchaWebapiApi\Api\Data\EndpointInterface;
 use PayPal\Braintree\Model\ApplePay\Ui\ConfigProvider;
+use PayPal\Braintree\Model\Ui\PayPal\ConfigProvider as PayPalConfigProvider;
+use PayPal\Braintree\Model\GooglePay\Ui\ConfigProvider as GooglePayConfigProvider;
 
 class IsCaptchaApplicableForRestRequest implements IsCaptchaApplicableForRequestInterface
 {
+    public const DISABLE_RECAPTCHA_FOR = [
+        ConfigProvider::METHOD_CODE,
+        PayPalConfigProvider::PAYPAL_CODE,
+        GooglePayConfigProvider::METHOD_CODE
+    ];
+
     /**
      * @var Request
      */
@@ -43,8 +51,8 @@ class IsCaptchaApplicableForRestRequest implements IsCaptchaApplicableForRequest
 
         $requestData = $this->request->getRequestData();
 
-        // Should check for captcha only & only if payment method is not Apple Pay.
+        // Should check for captcha only & only if payment method is not Apple Pay, Google Pay and PayPal.
         return isset($requestData['paymentMethod']['method'])
-            && $requestData['paymentMethod']['method'] !== ConfigProvider::METHOD_CODE;
+            && !in_array($requestData['paymentMethod']['method'], self::DISABLE_RECAPTCHA_FOR);
     }
 }

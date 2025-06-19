@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -34,7 +34,7 @@ class Config extends GatewayConfig
     public function __construct(
         StoreConfigResolver $storeConfigResolver,
         ScopeConfigInterface $scopeConfig,
-        $methodCode = null,
+        ?string $methodCode = null,
         string $pathPattern = GatewayConfig::DEFAULT_PATH_PATTERN
     ) {
         $this->storeConfigResolver = $storeConfigResolver;

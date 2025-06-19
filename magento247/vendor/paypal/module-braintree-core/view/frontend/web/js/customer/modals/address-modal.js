@@ -1,9 +1,8 @@
 define([
     'jquery',
     'ko',
-    'PayPal_Braintree/js/customer/utilities',
-    'mageUtils'
-], function ($, ko, utilities, utils) {
+    'mage/url'
+], function ($, ko, urlBuilder) {
     'use strict';
 
     return {
@@ -12,10 +11,7 @@ define([
             newAddressFormVisible: ko.observable(false),
             selectExistingVisible: ko.observable(false),
             currentAddresses: ko.observableArray([]),
-            initialSubscriptionAddressId: ko.observable(null),
             currentShippingId: ko.observable(null),
-            currentEntityId: ko.observable(null),
-            currentOrderIsGrouped: ko.observable(false),
             useForSelected: ko.observable(false),
             saveAddressDisabled: ko.observable(true),
             confirmationVisibleType: ko.observable(null),
@@ -35,47 +31,45 @@ define([
             currentCountryId: ko.observable(null),
             countries: ko.observableArray(null)
         },
-
-        fetchAllAddressUrl: 'rest/V1/repeat-orders/user-addresses',
-        assignAddressUrl: 'rest/V1/repeat-orders/grouped/set-shipping-address/',
-        useForAllUrl: 'rest/V1/repeat-orders/set-shipping-address-for-all/',
-        addAddressUrl: 'rest/V1/repeat-orders/add-shipping-address/',
         validatedPostCodeExample: [],
 
-        showAddressModal: function (entity_id, groupedOrdersLength, shippingId, countryId) {
-            var self = this;
+        /**
+         * Show address modal
+         *
+         * @param storeCode
+         */
+        showAddressModal: function (storeCode) {
+            let self = this;
 
             this.viewModel.visible(true);
             this.viewModel.selectExistingVisible(true);
-            this.viewModel.currentEntityId(entity_id);
-            this.viewModel.initialSubscriptionAddressId(shippingId);
-            this.viewModel.currentOrderIsGrouped(groupedOrdersLength > 1);
             this.viewModel.useForSelected(false);
             this.clearAddressField();
 
-            fetch('/graphql', {
+            fetch(urlBuilder.build('graphql'), {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Store': storeCode
                 },
                 body: JSON.stringify({
                     query: `{
-                customer {
-                    addresses {
-                        id,
-                        street,
-                        country_id,
-                        region {
-                            region_code
-                        },
-                        telephone,
-                        postcode,
-                        firstname,
-                        lastname,
-                        city
-                    }
-                }
-              }`
+                        customer {
+                            addresses {
+                                id,
+                                street,
+                                country_id,
+                                region {
+                                    region_code
+                                },
+                                telephone,
+                                postcode,
+                                firstname,
+                                lastname,
+                                city
+                            }
+                        }
+                    }`
                 })
             }).then(response => response.json()).then(response => {
                 const addresses = response.data.customer?.addresses || [];
@@ -102,96 +96,15 @@ define([
                     self.viewModel.currentAddresses.push(address);
                 }
 
-                self.viewModel.currentShippingId(shippingId);
-                self.viewModel.currentCountryId(countryId);
                 self.viewModel.saveAddressDisabled(true);
             });
         },
 
-        hideAddressModal: function () {
-            this.viewModel.newAddressFormVisible(false);
-            this.viewModel.selectExistingVisible(false);
-            this.viewModel.confirmationVisibleType(null);
-            this.viewModel.visible(false);
-
-            // Remove previous clickToAddress initialization block
-            $('#cc_c2a').remove();
-        },
-
-        showConfirmChangeAddress: function (event, context, type) {
-            if (type === 'new') {
-                let form = $(event.target).closest('form');
-
-                if (!(form.validation() && form.validation('isValid'))) {
-                    return false;
-                }
-            }
-
-            this.viewModel.newAddressFormVisible(false);
-            this.viewModel.selectExistingVisible(false);
-            this.viewModel.confirmationVisibleType(type);
-        },
-
         /**
-     * @param {*} postCode
-     * @param {*} countryId
-     * @return {Boolean}
-     */
-        validatePostCode: function (postCode, countryId) {
-            var pattern, regex,
-                patterns = window.checkout.postCodes[countryId];
-
-            this.validatedPostCodeExample = [];
-
-            if (!utils.isEmpty(postCode) && !utils.isEmpty(patterns)) {
-                for (pattern in patterns) {
-                    if (patterns.hasOwnProperty(pattern)) { //eslint-disable-line max-depth
-                        this.validatedPostCodeExample.push(patterns[pattern].example);
-                        regex = new RegExp(patterns[pattern].pattern);
-
-                        if (regex.test(postCode)) { //eslint-disable-line max-depth
-                            return true;
-                        }
-                    }
-                }
-
-                return false;
-            }
-
-            return true;
-        },
-
-        postcodeValidation: function (postcodeElement) {
-            var countryId = $('select[name="country"]:visible').val(),
-                validationResult,
-                warnMessage,
-                warnElement = $('.warning-postcode');
-
-            if (postcodeElement == null || postcodeElement.val() == null) {
-                return true;
-            }
-
-            warnElement.hide();
-            warnElement.text('');
-
-            validationResult = this.validatePostCode(postcodeElement.val(), countryId, []);
-
-            if (!validationResult) {
-                warnMessage = 'Please enter a valid post code.';
-                warnElement.show();
-                warnElement.text(warnMessage);
-
-                if (warnMessage) {
-                    warnElement.prev().addClass('input-postcode-error');
-                }
-
-            } else {
-                warnElement.prev().removeClass('input-postcode-error');
-            }
-
-            return validationResult;
-        },
-
+         * toggle (show/hide) add new address form
+         *
+         * @param show
+         */
         toggleNewAddAddressForm: function (show) {
             this.viewModel.newAddressFormVisible(show);
             this.viewModel.selectExistingVisible(!show);
@@ -199,6 +112,9 @@ define([
             this.clearAddressField();
         },
 
+        /**
+         * Clear address fields
+         */
         clearAddressField: function () {
             $('#cc_c2a').remove();
             this.viewModel.currentShippingId(null);
@@ -211,85 +127,11 @@ define([
             this.viewModel.newAddress.country = this.viewModel.currentCountryId();
         },
 
+        /**
+         * Update current address ID
+         */
         updateCurrentAddressId: function () {
-            var current = this.viewModel.currentShippingId(),
-                initial = this.viewModel.initialSubscriptionAddressId();
-
-            this.viewModel.saveAddressDisabled(current === initial);
             this.viewModel.useForSelected(false);
-        },
-
-        onUseForAllChange: function (type, event) {
-            if (event && event.target) {
-                this.viewModel.useForSelected(event.target.checked);
-            }
-
-            if (type === 'existing') {
-                let currentId = this.viewModel.currentShippingId(),
-                    initialId = this.viewModel.initialSubscriptionAddressId(),
-                    defaultForAll = this.viewModel.defaultForAllAddressId();
-
-                if (currentId === initialId && defaultForAll === currentId && this.viewModel.useForSelected()) {
-                    this.viewModel.saveAddressDisabled(!this.viewModel.saveAddressDisabled());
-                }
-            }
-
-            return true;
-        },
-
-        submitChanges: function (event) {
-            if (this.viewModel.confirmationVisibleType() === 'new') {
-                return this.submitNewAddress(event);
-            }
-
-            return this.submitExistingAddress();
-        },
-
-        submitExistingAddress: function () {
-            var self = this,
-                entityId = this.viewModel.currentEntityId(),
-                addressId = this.viewModel.currentShippingId(),
-                useForAll = this.viewModel.useForSelected(),
-                url = (useForAll ? this.useForAllUrl : this.assignAddressUrl + entityId + '/') + addressId,
-                verb = useForAll ? 'POST' : 'PUT';
-
-            utilities.makeCall(url, verb, function () {
-                self.hideAddressModal();
-                utilities.viewModel.updatedOrderEntityId(entityId);
-            }, self.viewModel);
-
-            return true;
-        },
-
-        submitNewAddress: function () {
-            var self = this,
-                entityId = this.viewModel.currentEntityId,
-                firstName = this.viewModel.newAddress.firstName,
-                lastName = this.viewModel.newAddress.lastName,
-                street = this.viewModel.newAddress.street,
-                city = this.viewModel.newAddress.city,
-                postcode = this.viewModel.newAddress.postcode,
-                country = this.viewModel.currentCountryId,
-                telephone = this.viewModel.newAddress.telephone,
-                url = this.addAddressUrl +
-          '?entityId=' + entityId +
-          '&firstName=' + firstName +
-          '&lastName=' + lastName +
-          '&street=' + street +
-          '&postcode=' + postcode +
-          '&city=' + city +
-          '&countryId=' + country +
-          '&telephone=' + telephone;
-
-            utilities.makeCall(
-                url,
-                'POST',
-                function (response) {
-                    self.viewModel.currentShippingId(response.id);
-                    self.submitExistingAddress();
-                }, self.viewModel);
-
-            return true;
         }
     };
 });

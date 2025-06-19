@@ -13,7 +13,6 @@ define([
     'PayPal_Braintree/js/helper/format-amount',
     'PayPal_Braintree/js/helper/remove-non-digit-characters',
     'PayPal_Braintree/js/helper/replace-unsupported-characters',
-    'PayPal_Braintree/js/helper/get-cart-line-items-helper',
     'Magento_Checkout/js/model/quote',
     'Magento_Checkout/js/model/full-screen-loader',
     'Magento_Checkout/js/model/payment/additional-validators',
@@ -33,7 +32,6 @@ define([
     formatAmount,
     removeNonDigitCharacters,
     replaceUnsupportedCharacters,
-    getCartLineItems,
     quote,
     fullScreenLoader,
     additionalValidators,
@@ -63,20 +61,6 @@ define([
              * {Object}
              */
             additionalData: {},
-
-            /**
-             * Line items array
-             *
-             * {Array}
-             */
-            lineItemsArray: [
-                'name',
-                'kind',
-                'quantity',
-                'unitAmount',
-                'productCode',
-                'description'
-            ],
 
             /**
              * PayPal client configuration
@@ -275,8 +259,8 @@ define([
             this.customerEmail(data.details.email);
             if (quote.isVirtual()) {
                 this.isReviewRequired(true);
-            } else if (this.isRequiredBillingAddress() === '1' || quote.billingAddress() === null) {
-                if (typeof data.details.billingAddress !== 'undefined') {
+            } else if (this.isRequiredBillingAddress() === '1' && quote.billingAddress() === null) {
+                if (data.details?.billingAddress?.line1) {
                     this.setBillingAddress(data.details, data.details.billingAddress);
                 } else {
                     this.setBillingAddress(data.details, data.details.shippingAddress);
@@ -301,8 +285,6 @@ define([
                 this.clientConfig.paypal.shippingAddressEditable = false;
                 this.clientConfig.paypal.shippingAddressOverride = this.getShippingAddress();
             }
-            // Send Line Items
-            this.clientConfig.paypal.lineItems = getCartLineItems();
 
             Braintree.setConfig(this.clientConfig);
 
@@ -339,7 +321,10 @@ define([
                     configSDK = {
                         components: 'buttons,messages,funding-eligibility',
                         'enable-funding': this.isCreditEnabled() ? 'credit' : 'paylater',
-                        currency: quoteObj['base_currency_code']
+                        currency: quoteObj['base_currency_code'],
+                        dataAttributes: {
+                            'page-type': 'checkout'
+                        }
                     },
                     buyerCountry = this.getMerchantCountry();
 
@@ -482,6 +467,16 @@ define([
                         });
                 }
             });
+
+            if (funding === 'paylater') {
+                button.updateProps({
+                    message: Braintree.getMessage(
+                        funding,
+                        paypalPayment.amount,
+                        'checkout'
+                    )
+                });
+            }
 
             if (button.isEligible() && payPalButtonElement.length) {
                 button.render('#' + payPalButtonId).then(function () {
@@ -738,42 +733,6 @@ define([
         },
 
         /**
-         * Get Message Layout
-         *
-         * @returns {string}
-         */
-        getMessagingLayout: function () {
-            return window.checkoutConfig.payment['braintree_paypal_paylater']['message']['layout'];
-        },
-
-        /**
-         * Get Message Logo
-         *
-         * @returns {string}
-         */
-        getMessagingLogo: function () {
-            return window.checkoutConfig.payment['braintree_paypal_paylater']['message']['logo'];
-        },
-
-        /**
-         * Get Message Logo position
-         *
-         * @returns {string}
-         */
-        getMessagingLogoPosition: function () {
-            return window.checkoutConfig.payment['braintree_paypal_paylater']['message']['logo_position'];
-        },
-
-        /**
-         * Get Message Text Color
-         *
-         * @returns {string}
-         */
-        getMessagingTextColor: function () {
-            return window.checkoutConfig.payment['braintree_paypal_paylater']['message']['text_color'];
-        },
-
-        /**
          * Get merchant country
          *
          * @returns {*}
@@ -791,15 +750,6 @@ define([
             // eslint-disable-next-line no-useless-escape
             str.replace('/[^a-zA-Z0-9\s\-.\']/', '');
             return str.substr(0, 127);
-        },
-
-        /**
-         * Can send line items
-         *
-         * @returns {Boolean}
-         */
-        canSendLineItems: function () {
-            return window.checkoutConfig.payment[this.getCode()].canSendLineItems;
         }
     });
 });

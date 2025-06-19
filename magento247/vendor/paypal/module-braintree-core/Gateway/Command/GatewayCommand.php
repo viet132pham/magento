@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Gateway\Command;
 
 use Magento\Framework\App\ObjectManager;
@@ -90,6 +91,7 @@ class GatewayCommand implements CommandInterface
      * @param ValidatorInterface|null $validator
      * @param OrderHelper|null $orderHelper
      * @param MessageManagerInterface|null $messageManager
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         BuilderInterface $requestBuilder,
@@ -98,10 +100,10 @@ class GatewayCommand implements CommandInterface
         LoggerInterface $logger,
         SubjectReader $subjectReader,
         OrderRepositoryInterface $orderRepository,
-        HandlerInterface $handler = null,
-        ValidatorInterface $validator = null,
-        OrderHelper $orderHelper = null,
-        MessageManagerInterface $messageManager = null
+        ?HandlerInterface $handler = null,
+        ?ValidatorInterface $validator = null,
+        ?OrderHelper $orderHelper = null,
+        ?MessageManagerInterface $messageManager = null
     ) {
         $this->requestBuilder = $requestBuilder;
         $this->transferFactory = $transferFactory;
@@ -141,14 +143,14 @@ class GatewayCommand implements CommandInterface
             if (!$result->isValid()) {
                 // TODO attempt to cancel Braintree Transaction
                 $this->logExceptions($result->getFailsDescription());
-                if ($response['object']->message === 'Transaction can only be voided if status is authorized, submitted_for_settlement, or - for PayPal - settlement_pending.') {
+                if ($response['object']->message === 'Transaction can only be voided if status is authorized, submitted_for_settlement, or - for PayPal - settlement_pending.') { // phpcs:ignore
                     $paymentDO = $this->subjectReader->readPayment($commandSubject);
                     $order = $this->orderRepository->get($paymentDO->getOrder()->getId());
 
                     $order = $this->orderHelper->cancelExpired($order);
                     $this->orderRepository->save($order);
 
-                    $this->messageManager->addWarningMessage("Order has been cancelled but Braintree Transaction hasn't been voided as Authorization has expired for this transaction.");
+                    $this->messageManager->addWarningMessage("Order has been cancelled but Braintree Transaction hasn't been voided as Authorization has expired for this transaction."); // phpcs:ignore
                     return;
                 }
                 throw new CommandException($this->getExceptionMessage($response));
@@ -166,10 +168,10 @@ class GatewayCommand implements CommandInterface
     /**
      * Get exception message
      *
-     * @param $response
+     * @param array $response
      * @return Phrase
      */
-    private function getExceptionMessage($response): Phrase
+    private function getExceptionMessage(array $response): Phrase
     {
         if (!isset($response['object']) || empty($response['object']->message)) {
             return __('Your payment could not be taken. Please try again or use a different payment method.');

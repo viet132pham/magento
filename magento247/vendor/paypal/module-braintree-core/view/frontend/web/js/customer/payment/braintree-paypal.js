@@ -5,20 +5,31 @@ define([
     'underscore',
     'PayPal_Braintree/js/view/payment/adapter',
     'braintreePayPalCheckout',
-    'mage/translate'
-], function (Component, $, ko, _, braintree, paypalCheckout, $t) {
+    'mage/translate',
+    'mage/url'
+], function (
+    Component,
+    $,
+    ko,
+    _,
+    braintree,
+    paypalCheckout,
+    $t,
+    urlBuilder
+) {
     'use strict';
 
     /**
      * braintree is not an instance of Component so we need to merge in our changes
      * and return an instance of Component with the final merged object.
      */
-    var uiC = _.extend(braintree, {
+    const uiC = _.extend(braintree, {
         clientToken: null,
         uiConfig: null,
         paymentMethodNonce: null,
 
         viewModel: {
+            paymentMethodCode: 'braintree_paypal',
             errorMessage: ko.observable()
         },
 
@@ -33,6 +44,7 @@ define([
             this.locale = uiConfig.locale;
             this.currency = uiConfig.currency;
             this.orderAmount = uiConfig.orderAmount;
+            this.storeCode = uiConfig.storeCode;
             const self = this;
 
             this.clientConfig = {
@@ -89,11 +101,11 @@ define([
                                     }
 
                                     $.ajax({
-                                        url: '/rest/default/V1/braintree/mine/payment/vault',
+                                        url: self.getVaultUrl(),
                                         type: 'POST',
                                         data: JSON.stringify({
                                             payment: {
-                                                payment_method_code: 'braintree_paypal',
+                                                payment_method_code: self.viewModel.paymentMethodCode,
                                                 payment_method_nonce: payload.nonce,
                                                 device_data: self.deviceData
                                             }
@@ -246,6 +258,15 @@ define([
             }
 
             window.dispatchEvent(new Event('paypal:reinit-express'));
+        },
+
+        /**
+         * Get vault url
+         *
+         * @returns {*}
+         */
+        getVaultUrl: function () {
+            return urlBuilder.build('rest/' + this.storeCode + '/V1/braintree/mine/payment/vault');
         }
     });
 

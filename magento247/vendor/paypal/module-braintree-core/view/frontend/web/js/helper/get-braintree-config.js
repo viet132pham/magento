@@ -1,10 +1,16 @@
-define(['jquery'], function ($) {
+define([
+    'jquery',
+    'mage/url'
+], function ($, urlBuilder) {
     'use strict';
 
-    return function () {
+    return function (storeCode) {
         return $.ajax({
             method: 'POST',
-            url: '/graphql',
+            url: urlBuilder.build('graphql'),
+            headers: {
+                'Store': storeCode
+            },
             contentType: 'application/json',
             data: JSON.stringify({
                 query: `{

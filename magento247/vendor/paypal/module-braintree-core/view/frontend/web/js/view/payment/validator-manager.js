@@ -94,9 +94,14 @@ define([
          * @param {string} errorMessage
          */
         showError: function (errorMessage) {
-            globalMessageList.addErrorMessage({
-                message: errorMessage
-            });
+            // Global message list only exists on the checkout page.
+            if ($('.checkout-index-index').length) {
+                globalMessageList.addErrorMessage({
+                    message: errorMessage
+                });
+            } else {
+                alert(errorMessage);
+            }
 
             this.getFullScreenLoader().stopLoader(true);
         }

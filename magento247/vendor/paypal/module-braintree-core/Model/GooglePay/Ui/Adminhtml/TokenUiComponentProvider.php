@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -89,7 +89,7 @@ class TokenUiComponentProvider implements TokenUiComponentProviderInterface
         $icons = [];
 
         try {
-            $icons = $this->configProvider->getIcons();
+            $icons = $this->configProvider->getIcon();
         } catch (LocalizedException $ex) {
             $this->logger->error(
                 'Failed to get Google Pay icons with error: ' . $ex->getMessage()

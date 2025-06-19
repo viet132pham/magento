@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -11,27 +11,13 @@ use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use PayPal\Braintree\Gateway\Config\Vault\Config as VaultConfig;
 use PayPal\Braintree\Model\Ui\ConfigProvider;
 use Psr\Log\LoggerInterface;
 
 class BraintreeConfig implements ArgumentInterface
 {
-    /**
-     * @var ConfigProvider
-     */
-    private ConfigProvider $configProvider;
-
-    /**
-     * @var VaultConfig
-     */
-    private VaultConfig $vaultConfig;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
     /**
      * @var array
      */
@@ -40,16 +26,15 @@ class BraintreeConfig implements ArgumentInterface
     /**
      * @param ConfigProvider $configProvider
      * @param VaultConfig $vaultConfig
+     * @param StoreManagerInterface $storeManager
      * @param LoggerInterface $logger
      */
     public function __construct(
-        ConfigProvider $configProvider,
-        VaultConfig $vaultConfig,
-        LoggerInterface $logger
+        private readonly ConfigProvider $configProvider,
+        private readonly VaultConfig $vaultConfig,
+        private readonly StoreManagerInterface $storeManager,
+        private readonly LoggerInterface $logger
     ) {
-        $this->configProvider = $configProvider;
-        $this->vaultConfig = $vaultConfig;
-        $this->logger = $logger;
     }
 
     /**
@@ -193,5 +178,16 @@ class BraintreeConfig implements ArgumentInterface
     public function getCvvImageUrl(): string
     {
         return $this->configProvider->getCvvImageUrl();
+    }
+
+    /**
+     * Get store code
+     *
+     * @return string
+     * @throws NoSuchEntityException
+     */
+    public function getStoreCode(): string
+    {
+        return $this->storeManager->getStore()->getCode();
     }
 }

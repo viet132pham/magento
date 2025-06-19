@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Test\Unit\Gateway\Request;
 
 use Magento\Payment\Gateway\Data\OrderAdapterInterface;
@@ -13,6 +14,7 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Sales\Api\Data\OrderPaymentExtension;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Vault\Model\PaymentToken;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -48,6 +50,9 @@ class VaultCaptureDataBuilderTest extends TestCase
      */
     private OrderAdapterInterface|MockObject $orderMock;
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         $this->paymentDO = $this->createMock(PaymentDataObjectInterface::class);
@@ -76,7 +81,7 @@ class VaultCaptureDataBuilderTest extends TestCase
     }
 
     /**
-     * \PayPal\Braintree\Gateway\Request\VaultCaptureDataBuilder::build
+     * @covers \PayPal\Braintree\Gateway\Request\VaultCaptureDataBuilder::build
      */
     public function testBuild()
     {
@@ -104,7 +109,7 @@ class VaultCaptureDataBuilderTest extends TestCase
             ->willReturn($amount);
 
         $paymentExtension = $this->getMockBuilder(OrderPaymentExtension::class)
-            ->setMethods(['getVaultPaymentToken'])
+            ->addMethods(['getVaultPaymentToken'])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 

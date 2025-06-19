@@ -1,35 +1,22 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
 namespace PayPal\Braintree\ViewModel;
 
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use PayPal\Braintree\Gateway\Config\PayPalPayLater\Config as PayLaterConfig;
 use PayPal\Braintree\Model\Ui\PayPal\ConfigProvider;
 use Psr\Log\LoggerInterface;
 
 class BraintreePayPalConfig implements ArgumentInterface
 {
-    /**
-     * @var ConfigProvider
-     */
-    private ConfigProvider $configProvider;
-
-    /**
-     * @var PayLaterConfig
-     */
-    private PayLaterConfig $payLaterConfig;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
     /**
      * @var array
      */
@@ -38,16 +25,15 @@ class BraintreePayPalConfig implements ArgumentInterface
     /**
      * @param ConfigProvider $configProvider
      * @param PayLaterConfig $payLaterConfig
+     * @param StoreManagerInterface $storeManager
      * @param LoggerInterface $logger
      */
     public function __construct(
-        ConfigProvider $configProvider,
-        PayLaterConfig $payLaterConfig,
-        LoggerInterface $logger
+        private readonly ConfigProvider $configProvider,
+        private readonly PayLaterConfig $payLaterConfig,
+        private readonly StoreManagerInterface $storeManager,
+        private readonly LoggerInterface $logger
     ) {
-        $this->configProvider = $configProvider;
-        $this->payLaterConfig = $payLaterConfig;
-        $this->logger = $logger;
     }
 
     /**
@@ -228,5 +214,16 @@ class BraintreePayPalConfig implements ArgumentInterface
 
             return $this->config;
         }
+    }
+
+    /**
+     * Get store code
+     *
+     * @return string
+     * @throws NoSuchEntityException
+     */
+    public function getStoreCode(): string
+    {
+        return $this->storeManager->getStore()->getCode();
     }
 }

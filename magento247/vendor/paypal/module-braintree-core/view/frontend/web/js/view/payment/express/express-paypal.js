@@ -3,14 +3,13 @@
  */
 
 define([
-    'jquery',
     'underscore',
     'uiComponent',
     'mage/url',
+    'Magento_Checkout/js/model/quote',
     'PayPal_Braintree/js/paypal/button',
-    'PayPal_Braintree/js/helper/get-cart-line-items-helper',
     'domReady!'
-], function ($, _, Component, url, paypalButton, getCartLineItems) {
+], function (_, Component, url, quote, payPalButton) {
     'use strict';
 
     const config = _.get(window.checkoutConfig.payment, 'braintree_paypal', {});
@@ -26,7 +25,12 @@ define([
             buttonLabel: _.get(config, ['style', 'label'], null),
             buttonColor: _.get(config, ['style', 'color'], null),
             buttonShape: _.get(config, ['style', 'shape'], null),
-            actionSuccess: url.build('braintree/paypal/review/')
+            skipOrderReviewStep: _.get(config, 'skipOrderReviewStep', true),
+            actionSuccess: _.get(config, 'skipOrderReviewStep', true)
+                ? url.build('checkout/onepage/success')
+                : url.build('braintree/paypal/review'),
+            storeCode: window.checkoutConfig.storeCode,
+            quoteId: window.checkoutConfig.quoteData.entity_id
         },
 
         /**
@@ -59,6 +63,15 @@ define([
         },
 
         /**
+         * Is Customer LoggedIn.
+         *
+         * @return {string}
+         */
+        getIsCustomerLoggedIn: function () {
+            return _.get(window.checkoutConfig, 'isCustomerLoggedIn', false) === false ? '' : true;
+        },
+
+        /**
          * Get the merchant's name config.
          *
          * @return {string}
@@ -78,20 +91,27 @@ define([
             }
 
             let buttonConfig = {
-                    'clientToken': this.clientToken,
-                    'currency': this.checkoutCurrency,
-                    'environment': config.environment,
-                    'merchantCountry': config.merchantCountry,
-                    'isCreditActive': _.get(window.checkoutConfig.payment,
-                        ['braintree_paypal_credit', 'isActive'], false)
-                },
+                    'buttonConfig': {
+                        'clientToken': this.clientToken,
+                        'currency': this.checkoutCurrency,
+                        'environment': config.environment,
+                        'merchantCountry': config.merchantCountry,
+                        'isCreditActive': _.get(
+                            window.checkoutConfig.payment,
+                            ['braintree_paypal_credit', 'isActive'],
+                            false
+                        ),
+                        'skipOrderReviewStep': this.skipOrderReviewStep,
+                        'pageType': 'checkout'
+                    },
+                    'buttonIds': [
+                        '#paypal-braintree-express-payment',
+                        '#paypal-braintree-express-credit-payment',
+                        '#paypal-braintree-express-paylater'
+                    ]
+                };
 
-                cartLineItems = getCartLineItems();
-
-            paypalButton.init(
-                buttonConfig,
-                JSON.stringify(cartLineItems)
-            );
+            payPalButton(buttonConfig);
         }
     });
 });

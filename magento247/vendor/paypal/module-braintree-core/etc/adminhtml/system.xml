@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -11,8 +11,8 @@
         <section id="payment">
             <group id="braintree_section" sortOrder="6" showInDefault="0" showInWebsite="1" showInStore="1">
                 <group id="braintree" translate="label comment" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label><![CDATA[Braintree Payments (by <a href="https://www.gene.co.uk/gene-braintree-payments/" target="_blank" rel="noopener noreferrer">GENE Commerce</a>) v4.6.1 -
-                    <a href="https://support.gene.co.uk/support/solutions/articles/35000228529" target="_blank" rel="noopener noreferrer">Release notes</a>]]></label>
+                    <label><![CDATA[Braintree Payments (by <a href="https://www.gene.co.uk/gene-braintree-payments/" target="_blank" rel="noopener noreferrer">GENE Commerce</a>) v4.7.0 -
+                    <a href="https://support.gene.co.uk/support/solutions/articles/35000278668" target="_blank" rel="noopener noreferrer">Release notes</a>]]></label>
                     <comment><![CDATA[Accept credit/debit cards and PayPal in your Magento store.<br />
                     No setup or monthly fees and your customers never leave your store to complete the purchase.]]></comment>
                     <fieldset_css>complex braintree-section</fieldset_css>
@@ -438,6 +438,11 @@
                             <source_model>PayPal\Braintree\Model\Adminhtml\Source\GooglePayCcType</source_model>
                             <config_path>payment/braintree_googlepay/cctypes</config_path>
                         </field>
+                        <field id="skip_order_review_step" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Skip Order Review Step</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                            <config_path>payment/braintree_googlepay/skip_order_review_step</config_path>
+                        </field>
                         <field id="btn_color" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                             <label>Button Color</label>
                             <source_model>PayPal\Braintree\Model\Adminhtml\Source\GooglePayBtnColor</source_model>
@@ -612,6 +617,12 @@
                             <config_path>payment/braintree_paypal/require_billing_address</config_path>
                             <comment>This feature needs to be enabled first for the merchant account through PayPal technical support.</comment>
                         </field>
+                        <field id="skip_order_review_step" translate="label" type="select" sortOrder="100"
+                               showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Skip Order Review Step</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                            <config_path>payment/braintree_paypal/skip_order_review_step</config_path>
+                        </field>
                         <field id="debug" translate="label" type="select" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="0">
                             <label>Debug</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -622,6 +633,18 @@
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                             <config_path>payment/braintree_paypal/display_on_shopping_cart</config_path>
                             <comment>Also affects mini-shopping cart.</comment>
+                        </field>
+                        <field id="send_package_tracking" translate="label" type="select" sortOrder="125" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Send Package Tracking</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                            <config_path>payment/braintree_paypal/send_package_tracking</config_path>
+                            <comment>Package tracking information will be sent to PayPal for PayPal transactions/orders only. Please enable 'Send Cart Line Items for PayPal' configuration field in order for 'Package Tracking' feature to work correctly.</comment>
+                        </field>
+                        <field id="tracking_notify_payer" translate="label" type="select" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Use PayPal's "Notify Payer" functionality</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                            <config_path>payment/braintree_paypal/tracking_notify_payer</config_path>
+                            <comment>Once this is set to Yes, Buyer or Payer will be notified by PayPal for package tracking updates.</comment>
                         </field>
                         <group id="styling" translate="label" type="select" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="0">
                             <label>Styling</label>
@@ -744,41 +767,6 @@
                                         <frontend_class>cart-credit-size</frontend_class>
                                     </field>
                                 </group>
-                                <group id="button_location_cart_type_messaging" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
-                                    <label>Pay Later Messaging</label>
-                                    <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
-                                    <field id="button_location_cart_type_messaging_show" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Show Pay Later Messaging</label>
-                                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_cart_type_messaging_show</config_path>
-                                        <frontend_class>cart-messaging-show</frontend_class>
-                                        <comment><![CDATA[Displays Pay Later messaging for available offers. Restrictions apply. <a  target="_blank" href="https://developer.paypal.com/docs/commerce-platforms/admin-panel/magento2/genecommerce/">Click here to learn more.</a>]]></comment>
-                                    </field>
-                                    <field id="button_location_cart_type_messaging_layout" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Message Layout</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Layout</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_cart_type_messaging_layout</config_path>
-                                        <frontend_class>cart-messaging-layout</frontend_class>
-                                    </field>
-                                    <field id="button_location_cart_type_messaging_logo" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Logo</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Logo</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_cart_type_messaging_logo</config_path>
-                                        <frontend_class>cart-messaging-logo</frontend_class>
-                                    </field>
-                                    <field id="button_location_cart_type_messaging_logo_position" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Logo Position</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\LogoPosition</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_cart_type_messaging_logo_position</config_path>
-                                        <frontend_class>cart-messaging-logo-position</frontend_class>
-                                    </field>
-                                    <field id="button_location_cart_type_messaging_text_color" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Text Color</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\TextColor</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_cart_type_messaging_text_color</config_path>
-                                        <frontend_class>cart-messaging-text-color</frontend_class>
-                                    </field>
-                                </group>
                             </group>
                             <group id="button_checkout" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                                 <label>Checkout Page</label>
@@ -890,41 +878,6 @@
                                         <source_model>PayPal\Braintree\Model\Config\Source\Size</source_model>
                                         <config_path>payment/braintree_paypal/button_location_checkout_type_credit_size</config_path>
                                         <frontend_class>checkout-credit-size</frontend_class>
-                                    </field>
-                                </group>
-                                <group id="button_location_checkout_type_messaging" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
-                                    <label>Pay Later Messaging</label>
-                                    <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
-                                    <field id="button_location_checkout_type_messaging_show" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Show Pay Later Messaging</label>
-                                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_checkout_type_messaging_show</config_path>
-                                        <frontend_class>checkout-messaging-show</frontend_class>
-                                        <comment><![CDATA[Displays Pay Later messaging for available offers. Restrictions apply. <a  target="_blank" href="https://developer.paypal.com/docs/commerce-platforms/admin-panel/magento2/genecommerce/">Click here to learn more.</a>]]></comment>
-                                    </field>
-                                    <field id="button_location_checkout_type_messaging_layout" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Message Layout</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Layout</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_checkout_type_messaging_layout</config_path>
-                                        <frontend_class>checkout-messaging-layout</frontend_class>
-                                    </field>
-                                    <field id="button_location_checkout_type_messaging_logo" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Logo</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Logo</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_checkout_type_messaging_logo</config_path>
-                                        <frontend_class>checkout-messaging-logo</frontend_class>
-                                    </field>
-                                    <field id="button_location_checkout_type_messaging_logo_position" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Logo Position</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\LogoPosition</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_checkout_type_messaging_logo_position</config_path>
-                                        <frontend_class>checkout-messaging-logo-position</frontend_class>
-                                    </field>
-                                    <field id="button_location_checkout_type_messaging_text_color" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Text Color</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\TextColor</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_checkout_type_messaging_text_color</config_path>
-                                        <frontend_class>checkout-messaging-text-color</frontend_class>
                                     </field>
                                 </group>
                             </group>
@@ -1040,41 +993,6 @@
                                         <frontend_class>productpage-credit-size</frontend_class>
                                     </field>
                                 </group>
-                                <group id="button_location_productpage_type_messaging" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
-                                    <label>Pay Later Messaging</label>
-                                    <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
-                                    <field id="button_location_productpage_type_messaging_show" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Show Pay Later Messaging</label>
-                                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_show</config_path>
-                                        <frontend_class>productpage-messaging-show</frontend_class>
-                                        <comment><![CDATA[Displays Pay Later messaging for available offers. Restrictions apply. <a  target="_blank" href="https://developer.paypal.com/docs/commerce-platforms/admin-panel/magento2/genecommerce/">Click here to learn more.</a>]]></comment>
-                                    </field>
-                                    <field id="button_location_productpage_type_messaging_layout" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Message Layout</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Layout</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_layout</config_path>
-                                        <frontend_class>productpage-messaging-layout</frontend_class>
-                                    </field>
-                                    <field id="button_location_productpage_type_messaging_logo" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Logo</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Logo</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_logo</config_path>
-                                        <frontend_class>productpage-messaging-logo</frontend_class>
-                                    </field>
-                                    <field id="button_location_productpage_type_messaging_logo_position" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Logo Position</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\LogoPosition</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_logo_position</config_path>
-                                        <frontend_class>productpage-messaging-logo-position</frontend_class>
-                                    </field>
-                                    <field id="button_location_productpage_type_messaging_text_color" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
-                                        <label>Text Color</label>
-                                        <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\TextColor</source_model>
-                                        <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_text_color</config_path>
-                                        <frontend_class>productpage-messaging-text-color</frontend_class>
-                                    </field>
-                                </group>
                             </group>
                             <field id="paypal_preview" translate="label" type="button" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="0">
                                 <frontend_model>PayPal\Braintree\Block\Adminhtml\System\Config\Preview</frontend_model>
@@ -1085,6 +1003,157 @@
                             </field>
                         </group>
                     </group>
+
+                    <group id="braintree_paylater_messaging" translate="label" showInDefault="1" showInWebsite="1" sortOrder="65">
+                        <label>Pay Later Messaging</label>
+                        <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                        <group id="button_location_productpage_type_messaging" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Product Page</label>
+                            <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                            <field id="button_location_productpage_type_messaging_show" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Show Pay Later Messaging</label>
+                                <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                                <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_show</config_path>
+                                <frontend_class>productpage-messaging-show</frontend_class>
+                                <comment><![CDATA[Displays Pay Later messaging for available offers. Restrictions apply. <a  target="_blank" href="https://developer.paypal.com/docs/commerce-platforms/admin-panel/magento2/genecommerce/">Click here to learn more.</a>]]></comment>
+                            </field>
+                            <field id="button_location_productpage_type_messaging_layout" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Message Layout</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Layout</source_model>
+                                <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_layout</config_path>
+                                <frontend_class>productpage-messaging-layout</frontend_class>
+                                <depends>
+                                    <field id="button_location_productpage_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_productpage_type_messaging_logo" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Logo</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Logo</source_model>
+                                <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_logo</config_path>
+                                <frontend_class>productpage-messaging-logo</frontend_class>
+                                <depends>
+                                    <field id="button_location_productpage_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_productpage_type_messaging_logo_position" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Logo Position</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\LogoPosition</source_model>
+                                <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_logo_position</config_path>
+                                <frontend_class>productpage-messaging-logo-position</frontend_class>
+                                <depends>
+                                    <field id="button_location_productpage_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_productpage_type_messaging_text_color" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Text Color</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\TextColor</source_model>
+                                <config_path>payment/braintree_paypal/button_location_productpage_type_messaging_text_color</config_path>
+                                <frontend_class>productpage-messaging-text-color</frontend_class>
+                                <depends>
+                                    <field id="button_location_productpage_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_productpage_type_messaging_preview" translate="label" type="button" sortOrder="80"
+                                   showInDefault="1" showInWebsite="1" showInStore="1">
+                                <frontend_model>PayPal\Braintree\Block\Adminhtml\System\Config\PayLaterMessage</frontend_model>
+                                <depends>
+                                    <field id="button_location_productpage_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                        </group>
+                        <group id="button_location_cart_type_messaging" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Cart</label>
+                            <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                            <field id="button_location_cart_type_messaging_show" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Show Pay Later Messaging</label>
+                                <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                                <config_path>payment/braintree_paypal/button_location_cart_type_messaging_show</config_path>
+                                <frontend_class>cart-messaging-show</frontend_class>
+                                <comment><![CDATA[Displays Pay Later messaging for available offers. Restrictions apply. <a  target="_blank" href="https://developer.paypal.com/docs/commerce-platforms/admin-panel/magento2/genecommerce/">Click here to learn more.</a>]]></comment>
+                            </field>
+                            <field id="button_location_cart_type_messaging_layout" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Message Layout</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Layout</source_model>
+                                <config_path>payment/braintree_paypal/button_location_cart_type_messaging_layout</config_path>
+                                <frontend_class>cart-messaging-layout</frontend_class>
+                                <depends>
+                                    <field id="button_location_cart_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_cart_type_messaging_logo" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Logo</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\Logo</source_model>
+                                <config_path>payment/braintree_paypal/button_location_cart_type_messaging_logo</config_path>
+                                <frontend_class>cart-messaging-logo</frontend_class>
+                                <depends>
+                                    <field id="button_location_cart_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_cart_type_messaging_logo_position" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Logo Position</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\LogoPosition</source_model>
+                                <config_path>payment/braintree_paypal/button_location_cart_type_messaging_logo_position</config_path>
+                                <frontend_class>cart-messaging-logo-position</frontend_class>
+                                <depends>
+                                    <field id="button_location_cart_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_cart_type_messaging_text_color" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Text Color</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\TextColor</source_model>
+                                <config_path>payment/braintree_paypal/button_location_cart_type_messaging_text_color</config_path>
+                                <frontend_class>cart-messaging-text-color</frontend_class>
+                                <depends>
+                                    <field id="button_location_cart_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_cart_type_messaging_preview" translate="label" type="button" sortOrder="80"
+                                   showInDefault="1" showInWebsite="1" showInStore="1">
+                                <frontend_model>PayPal\Braintree\Block\Adminhtml\System\Config\PayLaterMessage</frontend_model>
+                                <depends>
+                                    <field id="button_location_cart_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                        </group>
+
+                        <group id="button_location_checkout_type_messaging" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Checkout</label>
+                            <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                            <field id="button_location_checkout_type_messaging_show" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Show Pay Later Messaging</label>
+                                <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                                <config_path>payment/braintree_paypal/button_location_checkout_type_messaging_show</config_path>
+                                <frontend_class>checkout-messaging-show</frontend_class>
+                                <comment><![CDATA[Displays Pay Later messaging for available offers. Restrictions apply. <a  target="_blank" href="https://developer.paypal.com/docs/commerce-platforms/admin-panel/magento2/genecommerce/">Click here to learn more.</a>]]></comment>
+                            </field>
+                            <field id="button_location_checkout_type_messaging_text_align" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Text Align</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\CheckoutTextAlign</source_model>
+                                <config_path>payment/braintree_paypal/button_location_checkout_type_messaging_text_align</config_path>
+                                <frontend_class>checkout-messaging-logo-position</frontend_class>
+                                <depends>
+                                    <field id="button_location_checkout_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_checkout_type_messaging_text_color" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                                <label>Text Color</label>
+                                <source_model>PayPal\Braintree\Model\Config\Source\PayPalMessages\CheckoutTextColor</source_model>
+                                <config_path>payment/braintree_paypal/button_location_checkout_type_messaging_text_color</config_path>
+                                <frontend_class>checkout-messaging-text-color</frontend_class>
+                                <depends>
+                                    <field id="button_location_checkout_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                            <field id="button_location_checkout_type_messaging_preview" translate="label" type="button" sortOrder="80"
+                                   showInDefault="1" showInWebsite="1" showInStore="1">
+                                <frontend_model>PayPal\Braintree\Block\Adminhtml\System\Config\PayLaterMessageCheckout</frontend_model>
+                                <depends>
+                                    <field id="button_location_checkout_type_messaging_show">1</field>
+                                </depends>
+                            </field>
+                        </group>
+                    </group>
+
                     <group id="braintree_3dsecure" translate="label" showInDefault="1" showInWebsite="1" sortOrder="65">
                         <label>3D Secure Verification Settings</label>
                         <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>

@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -197,6 +197,7 @@ class AddPaymentToVault implements AddPaymentToVaultInterface
         $paymentToken->setPaymentMethodCode($paymentTokenAdapter->getPaymentMethodCode());
         $paymentToken->setGatewayToken($paymentTokenAdapter->getGatewayToken());
         $paymentToken->setCustomerId((int) $customer->getId());
+        $paymentToken->setWebsiteId((int) $customer->getWebsiteId());
         $paymentToken->setIsActive(true);
         $paymentToken->setIsVisible(true);
         $paymentToken->setTokenDetails($paymentTokenAdapter->getTokenDetails());

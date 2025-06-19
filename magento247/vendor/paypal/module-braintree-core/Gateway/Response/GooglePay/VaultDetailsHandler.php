@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -72,6 +72,7 @@ class VaultDetailsHandler extends Handler implements HandlerInterface
 
         $paymentToken->setTokenDetails($this->convertDetailsToJSON([
             // Card Type has a prefix, eg `Google Pay - MasterCard`, so needs removing.
+            'customerId' => $transaction->customerDetails->id,
             'type' => $this->getCreditCardType(
                 str_replace('Google Pay - ', '', $transaction->googlePayCardDetails->sourceCardType)
             ),

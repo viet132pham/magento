@@ -6,6 +6,8 @@ namespace Aws;
  *
  * @method \Aws\ACMPCA\ACMPCAClient createACMPCA(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionACMPCA(array $args = [])
+ * @method \Aws\AIOps\AIOpsClient createAIOps(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionAIOps(array $args = [])
  * @method \Aws\ARCZonalShift\ARCZonalShiftClient createARCZonalShift(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionARCZonalShift(array $args = [])
  * @method \Aws\AccessAnalyzer\AccessAnalyzerClient createAccessAnalyzer(array $args = [])
@@ -454,6 +456,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionLookoutMetrics(array $args = [])
  * @method \Aws\LookoutforVision\LookoutforVisionClient createLookoutforVision(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionLookoutforVision(array $args = [])
+ * @method \Aws\MPA\MPAClient createMPA(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionMPA(array $args = [])
  * @method \Aws\MQ\MQClient createMQ(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionMQ(array $args = [])
  * @method \Aws\MTurk\MTurkClient createMTurk(array $args = [])
@@ -815,7 +819,7 @@ namespace Aws;
  */
 class Sdk
 {
-    const VERSION = '3.344.0';
+    const VERSION = '3.346.0';
 
     /** @var array Arguments for creating clients */
     private $args;

@@ -28,6 +28,8 @@ $isThreeDSecureEnabled = $braintreeThreeDSecureConfigViewModel->isEnabled();
     $cardIcons = $braintreeConfigViewModel->getCardIcons();
     $cvvImage = $braintreeConfigViewModel->getCvvImageUrl();
     $typesMapper = $braintreeConfigViewModel->getCcTypesMapper();
+    $storeCode = $braintreeConfigViewModel->getStoreCode();
+    $ipAddress = $braintreeThreeDSecureConfigViewModel->getIpAddress();
 
     $icons = [];
     foreach ($availableCardTypes as $cardType) {
@@ -69,9 +71,12 @@ $isThreeDSecureEnabled = $braintreeThreeDSecureConfigViewModel->isEnabled();
                             "children": {
                                 "address": {
                                     "component": "PayPal_Braintree/js/customer/payment/address-form-initializer",
-                                    "template": "PayPal_Braintree/customer/payment/billing-address"
+                                    "template": "PayPal_Braintree/customer/payment/billing-address",
+                                    "storeCode": "<?= /* @noEscape */ $storeCode ?>"
                                 }
-                            }
+                            },
+                            "storeCode": "<?= /* @noEscape */ $storeCode ?>",
+                            "ipAddress": "<?= /* @noEscape */ $ipAddress ?>"
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -60,7 +60,7 @@ class Config extends MagentoPaymentGatewayConfig
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function isActive(int $storeId = null): bool
+    public function isActive(?int $storeId = null): bool
     {
         if ($storeId === null) {
             $storeId = $this->storeConfigResolver->getStoreId();

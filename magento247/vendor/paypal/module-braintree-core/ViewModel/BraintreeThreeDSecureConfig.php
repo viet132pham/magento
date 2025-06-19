@@ -1,13 +1,14 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
 namespace PayPal\Braintree\ViewModel;
 
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use PayPal\Braintree\Gateway\Config\Config;
 use PayPal\Braintree\Model\Ui\ThreeDeeSecure\ConfigProvider;
@@ -15,16 +16,6 @@ use Psr\Log\LoggerInterface;
 
 class BraintreeThreeDSecureConfig implements ArgumentInterface
 {
-    /**
-     * @var ConfigProvider
-     */
-    private ConfigProvider $configProvider;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
     /**
      * @var array
      */
@@ -35,11 +26,9 @@ class BraintreeThreeDSecureConfig implements ArgumentInterface
      * @param LoggerInterface $logger
      */
     public function __construct(
-        ConfigProvider $configProvider,
-        LoggerInterface $logger
+        private readonly ConfigProvider $configProvider,
+        private readonly LoggerInterface $logger
     ) {
-        $this->configProvider = $configProvider;
-        $this->logger = $logger;
     }
 
     /**
@@ -109,5 +98,15 @@ class BraintreeThreeDSecureConfig implements ArgumentInterface
 
             return $this->config;
         }
+    }
+
+    /**
+     * Get Customer's IP Address
+     *
+     * @return string
+     */
+    public function getIpAddress(): string
+    {
+        return $this->configProvider->getIpAddress();
     }
 }

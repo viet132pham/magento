@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Gateway\Response;
 
 use Magento\Payment\Gateway\Helper\ContextHelper;
@@ -77,7 +78,7 @@ class ThreeDSecureDetailsHandler implements HandlerInterface
      * @param string|null $eciFlagValue
      * @return string
      */
-    public function getEciFlagInformation(string $eciFlagValue = null): string
+    public function getEciFlagInformation(?string $eciFlagValue = null): string
     {
         if ($eciFlagValue !== null && array_key_exists($eciFlagValue, self::ECI_ACCEPTED_VALUES)) {
             return self::ECI_ACCEPTED_VALUES[$eciFlagValue];

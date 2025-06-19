@@ -22,12 +22,17 @@ define([
             buttonLabel: _.get(config, ['style', 'label'], null),
             buttonColor: _.get(config, ['style', 'color'], null),
             buttonShape: _.get(config, ['style', 'shape'], null),
-            actionSuccess: url.build('braintree/paypal/review/'),
+            skipOrderReviewStep: _.get(config, 'skipOrderReviewStep', true),
+            actionSuccess: _.get(config, 'skipOrderReviewStep', true)
+                ? url.build('checkout/onepage/success')
+                : url.build('braintree/paypal/review'),
+            storeCode: window.checkoutConfig.storeCode,
+            quoteId: window.checkoutConfig.quoteData.entity_id,
             isMessageActive: _.get(config, 'isMessageActive', false),
             messageTextColor: _.get(config ,['message', 'text_color'], null),
             messageLayout: _.get(config ,['message', 'layout'], null),
             messageLogoPosition: _.get(config ,['message', 'logo_position'], null),
-            messageLogo: _.get(config ,['message', 'logo'], null)
+            messageLogo: _.get(config ,['message', 'logo'], null),
         },
 
         /**
@@ -66,6 +71,15 @@ define([
          */
         getIsRequiredBillingAddress: function () {
             return _.get(config, 'isRequiredBillingAddress', '0') === '0' ? '' : 'true';
+        },
+
+        /**
+         * Is Customer LoggedIn.
+         *
+         * @return {string}
+         */
+        getIsCustomerLoggedIn: function () {
+            return _.get(window.checkoutConfig, 'isCustomerLoggedIn', false) === false ? '' : true;
         },
 
         /**

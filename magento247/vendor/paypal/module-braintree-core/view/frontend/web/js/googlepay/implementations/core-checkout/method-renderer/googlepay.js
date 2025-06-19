@@ -3,19 +3,27 @@
  **/
 define([
     'underscore',
+    'mage/translate',
     'Magento_Checkout/js/view/payment/default',
     'Magento_Checkout/js/model/quote',
     'Magento_Vault/js/view/payment/vault-enabler',
     'PayPal_Braintree/js/googlepay/button',
     'PayPal_Braintree/js/googlepay/model/parsed-response',
+    'PayPal_Braintree/js/googlepay/model/payment-data',
+    'PayPal_Braintree/js/helper/get-google-pay-line-items',
+    'PayPal_Braintree/js/view/payment/adapter',
     'PayPal_Braintree/js/view/payment/validator-handler'
 ], function (
     _,
+    $t,
     Component,
     quote,
     VaultEnabler,
     GooglePayButton,
     parsedResponseModel,
+    paymentDataModel,
+    getGooglePayLineItems,
+    braintreeMainAdapter,
     validatorManager
 ) {
     'use strict';
@@ -78,26 +86,58 @@ define([
         /**
          * Google Pay place order method
          */
-        startPlaceOrder: function (device_data) {
-            let self = this;
+        startPlaceOrder: function (paymentData) {
+            return new Promise((resolve) => {
+                paymentDataModel.setPaymentMethodData(_.get(
+                    paymentData,
+                    'paymentMethodData',
+                    null
+                ));
+                paymentDataModel.setEmail(_.get(paymentData, 'email', ''));
+                paymentDataModel.setShippingAddress(_.get(
+                    paymentData,
+                    'shippingAddress',
+                    null
+                ));
 
-            /* Set the nonce & bin and trigger 3DS if card is not network tokenized */
-            self.paymentMethodNonce = parsedResponseModel.getNonce();
-            self.creditCardBin = parsedResponseModel.getBin();
+                const googlePaymentInstance = braintreeMainAdapter.getGooglePayInstance();
+                googlePaymentInstance.parseResponse(paymentData).then(function (result) {
+                    parsedResponseModel.setNonce(result.nonce);
+                    parsedResponseModel.setIsNetworkTokenized(_.get(
+                        result,
+                        ['details', 'isNetworkTokenized'],
+                        false
+                    ));
+                    parsedResponseModel.setBin(_.get(
+                        result,
+                        ['details', 'bin'],
+                        null
+                    ));
 
-            if (parsedResponseModel.getIsNetworkTokenized() === false) {
-                // place order on success validation
-                self.validatorManager.validate(self, function () {
-                    self.setDeviceData(device_data);
-                    return self.placeOrder('parent');
-                }, function () {
-                    self.paymentMethodNonce = null;
-                    self.creditCardBin = null;
-                });
-            } else {
-                self.setDeviceData(device_data);
-                self.placeOrder();
-            }
+                    this.email = paymentDataModel.getEmail();
+                    this.paymentMethodNonce = parsedResponseModel.getNonce();
+                    this.creditCardBin = parsedResponseModel.getBin();
+
+                    if (parsedResponseModel.getIsNetworkTokenized() === false) {
+                        // place order on success validation
+                        this.validatorManager.validate(this, function () {
+                            this.setDeviceData(braintreeMainAdapter.deviceData);
+                            return this.placeOrder('parent');
+                        }.bind(this), function () {
+                            this.paymentMethodNonce = null;
+                            this.creditCardBin = null;
+                        }.bind(this));
+                    } else {
+                        this.setDeviceData(braintreeMainAdapter.deviceData);
+                        this.placeOrder();
+                    }
+
+                    resolve({
+                        transactionState: 'SUCCESS',
+                    });
+                }.bind(this));
+            });
+
         },
 
         /**
@@ -116,14 +156,24 @@ define([
         },
 
         /**
+         * Get price includes tax configuration.
+         * @returns bool
+         */
+        getPriceIncludesTax: function () {
+            return window.checkoutConfig.payment[this.getCode()].priceIncludesTax;
+        },
+
+        /**
          * Payment request info
          */
         getPaymentRequest: function () {
             let result = {
                 transactionInfo: {
-                    totalPriceStatus: 'FINAL',
+                    currencyCode: this.currencyCode,
+                    displayItems: getGooglePayLineItems(quote.totals(), this.getPriceIncludesTax()),
                     totalPrice: this.grandTotalAmount,
-                    currencyCode: this.currencyCode
+                    totalPriceLabel: $t('Total'),
+                    totalPriceStatus: 'FINAL'
                 },
                 allowedPaymentMethods: [
                     {
@@ -140,7 +190,8 @@ define([
                     }
                 ],
                 shippingAddressRequired: false,
-                emailRequired: false
+                emailRequired: false,
+                callbackIntents: ['PAYMENT_AUTHORIZATION']
             };
 
             if (this.getEnvironment() !== 'TEST') {
@@ -176,6 +227,14 @@ define([
          */
         getBtnColor: function () {
             return window.checkoutConfig.payment[this.getCode()].btnColor;
+        },
+
+        /**
+         * Return the skip review state for the Google Pay at end of checkout.
+         * @returns bool
+         */
+        getSkipReview: function () {
+            return false;
         },
 
         /**

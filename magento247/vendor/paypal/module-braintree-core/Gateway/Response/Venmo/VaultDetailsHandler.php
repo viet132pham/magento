@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -26,8 +26,10 @@ class VaultDetailsHandler extends Handler implements HandlerInterface
     /**
      * @inheritdoc
      */
-    public function handle(array $handlingSubject, array $response): void
-    {
+    public function handle(
+        array $handlingSubject,
+        array $response
+    ): void {
         $paymentDO = $this->subjectReader->readPayment($handlingSubject);
         $transaction = $this->subjectReader->readTransaction($response);
         $payment = $paymentDO->getPayment();
@@ -61,7 +63,8 @@ class VaultDetailsHandler extends Handler implements HandlerInterface
         $paymentToken->setExpiresAt($this->getExpirationDate());
 
         $paymentToken->setTokenDetails($this->convertDetailsToJSON([
-            'username' => $transaction->venmoAccountDetails->username,
+            'customerId' => $transaction->customerDetails->id,
+            'username' => $transaction->venmoAccountDetails->username
         ]));
 
         return $paymentToken;

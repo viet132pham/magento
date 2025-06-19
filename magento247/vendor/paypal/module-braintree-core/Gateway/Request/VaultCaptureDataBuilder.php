@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Gateway\Request;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
@@ -48,17 +49,17 @@ class VaultCaptureDataBuilder implements BuilderInterface
         $extensionAttributes = $payment->getExtensionAttributes();
         $paymentToken = $extensionAttributes->getVaultPaymentToken();
 
-        if (is_null($paymentToken)) {
+        if ($paymentToken === null) {
             $paymentGatewayToken = false;
         } else {
             $paymentGatewayToken = $paymentToken->getGatewayToken();
         }
 
         return [
-            'amount' => $this->formatPrice($this->subjectReader->readAmount($buildSubject)),
+            PaymentDataBuilder::AMOUNT => $this->formatPrice($this->subjectReader->readAmount($buildSubject)),
             'paymentMethodToken' => $paymentGatewayToken,
             PaymentDataBuilder::MERCHANT_ACCOUNT_ID => $this->config
-                ->getMerchantAccountId($paymentDO->getOrder()->getStoreId())
+                ->getMerchantAccountId((int) $paymentDO->getOrder()->getStoreId())
         ];
     }
 }

@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Gateway\Config;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -76,9 +77,9 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         StoreConfigResolver $storeConfigResolver,
-        string $methodCode = null,
+        ?string $methodCode = null,
         string $pathPattern = self::DEFAULT_PATH_PATTERN,
-        Json $serializer = null
+        ?Json $serializer = null
     ) {
         parent::__construct($scopeConfig, $methodCode, $pathPattern);
         $this->storeConfigResolver = $storeConfigResolver;
@@ -258,15 +259,16 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     /**
      * Get environment
      *
+     * @param int|null $storeId
      * @return string
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function getEnvironment(): string
+    public function getEnvironment(?int $storeId = null): string
     {
         return $this->getValue(
             self::KEY_ENVIRONMENT,
-            $this->storeConfigResolver->getStoreId()
+            $storeId ?? $this->storeConfigResolver->getStoreId()
         );
     }
 
@@ -326,7 +328,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function isActive(int $storeId = null): bool
+    public function isActive(?int $storeId = null): bool
     {
         return (bool) $this->getValue(
             self::KEY_ACTIVE,
@@ -359,7 +361,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function getMerchantAccountId(int $storeId = null): ?string
+    public function getMerchantAccountId(?int $storeId = null): ?string
     {
         return $this->getValue(
             self::KEY_MERCHANT_ACCOUNT_ID,
@@ -388,7 +390,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function areCheckoutExpressPaymentsEnabled(int $storeId = null): bool
+    public function areCheckoutExpressPaymentsEnabled(?int $storeId = null): bool
     {
         return (bool) $this->getValue(
             self::KEY_ENABLE_CHECKOUT_EXPRESS_PAYMENTS,

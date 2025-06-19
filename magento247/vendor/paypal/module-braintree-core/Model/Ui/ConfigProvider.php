@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Model\Ui;
 
 use Braintree\Result\Error;
@@ -117,16 +118,17 @@ class ConfigProvider implements ConfigProviderInterface
     /**
      * Generate a new client token if necessary
      *
+     * @param int|null $storeId
      * @return Error|Successful|string|null
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function getClientToken(): Error|Successful|string|null
+    public function getClientToken(?int $storeId = null): Error|Successful|string|null
     {
         if (empty($this->clientToken)) {
             $params = [];
 
-            $merchantAccountId = $this->config->getMerchantAccountId();
+            $merchantAccountId = $this->config->getMerchantAccountId($storeId);
             if (!empty($merchantAccountId)) {
                 $params[PaymentDataBuilder::MERCHANT_ACCOUNT_ID] = $merchantAccountId;
             }
@@ -157,7 +159,7 @@ class ConfigProvider implements ConfigProviderInterface
                 if ($asset) {
                     $placeholder = $this->assetSource->findSource($asset);
                     if ($placeholder) {
-                        [$width, $height] = getimagesize($asset->getSourceFile());
+                        [$width, $height] = getimagesizefromstring($asset->getSourceFile());
                         $this->icons[$code] = [
                             'url' => $asset->getUrl(),
                             'alt' => $code,
@@ -177,7 +179,7 @@ class ConfigProvider implements ConfigProviderInterface
      *
      * @return string
      */
-    public function getCvvImageUrl()
+    public function getCvvImageUrl(): string
     {
         return $this->ccConfig->getCvvImageUrl();
     }

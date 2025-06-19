@@ -3,24 +3,22 @@
  **/
 define(
     [
-        'uiComponent',
-        'knockout',
         'jquery',
         'braintree',
         'braintreeDataCollector',
         'braintreeApplePay',
         'mage/translate',
-        'Magento_Checkout/js/model/payment/additional-validators'
+        'Magento_Checkout/js/model/payment/additional-validators',
+        'PayPal_Braintree/js/helper/check-guest-checkout'
     ],
     function (
-        Component,
-        ko,
         $,
         braintree,
         dataCollector,
         applePay,
         $t,
-        additionalValidators
+        additionalValidators,
+        checkGuestCheckout,
     ) {
         'use strict';
 
@@ -121,6 +119,10 @@ define(
                 el.alt = $t('Pay with Apple Pay');
                 el.addEventListener('click', function (e) {
                     e.preventDefault();
+
+                    if (!checkGuestCheckout()) {
+                        return false;
+                    }
 
                     if ($(el).parents('#braintree-applepay-express-payment').length === 0
                         && !additionalValidators.validate()) {

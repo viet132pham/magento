@@ -4,12 +4,14 @@
 define(
     [
         'uiComponent',
+        'jquery',
         'PayPal_Braintree/js/googlepay/button',
         'PayPal_Braintree/js/googlepay/api',
         'domReady!'
     ],
     function (
         Component,
+        $,
         button,
         buttonApi
     ) {
@@ -27,7 +29,11 @@ define(
                 environment: 'TEST',
                 cardType: [],
                 btnColor: 0,
-                threeDSecure: null
+                threeDSecure: null,
+                quoteId: 0,
+                storeCode: 'default',
+                skipOrderReviewStep: false,
+                priceFormat: [],
             },
 
             /**
@@ -40,6 +46,7 @@ define(
                 this.threeDSecure.clientToken = this.clientToken;
                 this.threeDSecure.environment = this.environment;
 
+                const element = $(`#${this.id}`);
                 let api = new buttonApi();
 
                 api.setEnvironment(this.environment);
@@ -51,10 +58,16 @@ define(
                 api.setCardTypes(this.cardTypes);
                 api.setBtnColor(this.btnColor);
                 api.setThreeDSecureValidatorConfig(this.threeDSecure);
+                api.setStoreCode(this.storeCode);
+                api.setQuoteId(this.quoteId);
+                api.setSkipReview(this.skipOrderReviewStep);
+                api.setPriceIncludesTax(this.priceIncludesTax);
+                api.setElement(element);
+                api.setPriceFormat(this.priceFormat);
 
                 // Attach the button
                 button.init(
-                    document.getElementById(this.id),
+                    element,
                     api
                 );
 

@@ -3,14 +3,13 @@
  **/
 define(
     [
-        'uiComponent',
         'underscore',
-        'knockout',
         'jquery',
         'Magento_Checkout/js/model/payment/additional-validators',
         'Magento_CheckoutAgreements/js/view/checkout-agreements',
         'PayPal_Braintree/js/googlepay/model/parsed-response',
-        'PayPal_Braintree/js/googlepay/model/payment-data',
+        'PayPal_Braintree/js/helper/check-guest-checkout',
+        'PayPal_Braintree/js/helper/is-cart-virtual',
         'PayPal_Braintree/js/view/payment/adapter',
         'braintree',
         'braintreeDataCollector',
@@ -19,14 +18,13 @@ define(
         'googlePayLibrary'
     ],
     function (
-        Component,
         _,
-        ko,
         $,
         additionalValidators,
         checkoutAgreements,
         parsedResponseModel,
-        paymentDataModel,
+        checkGuestCheckout,
+        isCartVirtual,
         braintreeMainAdapter,
         braintree,
         dataCollector,
@@ -66,9 +64,18 @@ define(
                     return;
                 }
 
+                const paymentDataCallbacks = {
+                    onPaymentAuthorized: context.startPlaceOrder.bind(context)
+                }
+
+                if (!isCartVirtual() && context.onPaymentDataChanged) {
+                    paymentDataCallbacks.onPaymentDataChanged = context.onPaymentDataChanged.bind(context);
+                }
+
                 // init google pay object
                 let paymentsClient = new window.google.payments.api.PaymentsClient({
-                        environment: context.getEnvironment()
+                        environment: context.getEnvironment(),
+                        paymentDataCallbacks,
                     }),
 
                     // Create a button within the KO element, as Google Pay can only be instantiated through
@@ -155,6 +162,10 @@ define(
                                 }
                             });
 
+                            if (!checkGuestCheckout()) {
+                                return false;
+                            }
+
                             if ($(button).parents('#braintree-googlepay-express-payment').length === 0
                                 && !additionalValidators.validate(false)) {
                                 event.preventDefault();
@@ -165,41 +176,13 @@ define(
                                 event.preventDefault();
                                 $('body').loader('show');
 
+                                braintreeMainAdapter.setGooglePayInstance(googlePaymentInstance);
+
                                 let paymentDataRequest = googlePaymentInstance.createPaymentDataRequest(
                                     context.getPaymentRequest()
                                 );
 
-                                paymentsClient.loadPaymentData(paymentDataRequest).then(function (paymentData) {
-                                    // Persist the paymentData (shipping address etc.)
-                                    paymentDataModel.setPaymentMethodData(_.get(
-                                        paymentData,
-                                        'paymentMethodData',
-                                        null
-                                    ));
-                                    paymentDataModel.setEmail(_.get(paymentData, 'email', ''));
-                                    paymentDataModel.setShippingAddress(_.get(
-                                        paymentData,
-                                        'shippingAddress',
-                                        null
-                                    ));
-                                    // Return the braintree nonce promise
-                                    return googlePaymentInstance.parseResponse(paymentData);
-                                }).then(function (result) {
-                                    parsedResponseModel.setNonce(result.nonce);
-                                    parsedResponseModel.setIsNetworkTokenized(_.get(
-                                        result,
-                                        ['details', 'isNetworkTokenized'],
-                                        false
-                                    ));
-                                    parsedResponseModel.setBin(_.get(
-                                        result,
-                                        ['details', 'bin'],
-                                        null
-                                    ));
-
-                                    context.startPlaceOrder(dataCollectorInstance.deviceData);
-                                    $('body').loader('hide');
-                                }).catch(function (err) {
+                                paymentsClient.loadPaymentData(paymentDataRequest).catch(function (err) {
                                     // Handle errors
                                     // err = {statusCode: "CANCELED"}
                                     console.error(err);
@@ -208,7 +191,7 @@ define(
                                 });
                             }
                         });
-                        element.appendChild(button);
+                        element.append(button);
                     }
                 }).catch(function (err) {
                     console.error(err);

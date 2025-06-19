@@ -8,18 +8,28 @@ define(
         'underscore',
         'uiComponent',
         'mage/translate',
-        'mage/storage',
         'Magento_Customer/js/customer-data',
-        'PayPal_Braintree/js/helper/remove-non-digit-characters'
+        'PayPal_Braintree/js/actions/create-payment',
+        'PayPal_Braintree/js/actions/get-shipping-methods',
+        'PayPal_Braintree/js/actions/set-shipping-information',
+        'PayPal_Braintree/js/actions/update-totals',
+        'PayPal_Braintree/js/helper/get-apple-pay-line-items',
+        'PayPal_Braintree/js/helper/remove-non-digit-characters',
+        'PayPal_Braintree/js/model/region-data',
     ],
     function (
         $,
         _,
         Component,
         $t,
-        storage,
         customerData,
-        removeNonDigitCharacters
+        createPayment,
+        getShippingMethods,
+        setShippingInformation,
+        updateTotals,
+        getApplePayLineItems,
+        removeNonDigitCharacters,
+        regionDataModel,
     ) {
         'use strict';
 
@@ -30,53 +40,10 @@ define(
                 displayName: null,
                 actionSuccess: null,
                 grandTotalAmount: 0,
-                isLoggedIn: false,
                 storeCode: 'default',
+                priceIncludesTax: true,
                 shippingAddress: {},
-                countryDirectory: null,
                 shippingMethods: {}
-            },
-
-            initialize: function () {
-                this._super();
-                if (!this.countryDirectory) {
-                    storage.get('rest/V1/directory/countries').done(function (result) {
-                        this.countryDirectory = {};
-                        let i, data, x, region, name;
-
-                        for (i = 0; i < result.length; ++i) {
-                            data = result[i];
-                            this.countryDirectory[data.two_letter_abbreviation] = {};
-                            if (typeof data.available_regions === 'undefined') {
-                                continue;
-                            }
-
-                            for (x = 0; x < data.available_regions.length; ++x) {
-                                region = data.available_regions[x];
-                                name = region.name.toLowerCase().replace(/[^A-Z0-9]/ig, '');
-                                this.countryDirectory[data.two_letter_abbreviation][name] = region.id;
-                            }
-                        }
-                    }.bind(this));
-                }
-            },
-
-            /**
-             * Get region ID
-             */
-            getRegionId: function (countryCode, regionName) {
-                if (typeof regionName !== 'string') {
-                    return null;
-                }
-
-                regionName = regionName.toLowerCase().replace(/[^A-Z0-9]/ig, '');
-
-                if (typeof this.countryDirectory[countryCode] !== 'undefined'
-                    && typeof this.countryDirectory[countryCode][regionName] !== 'undefined') {
-                    return this.countryDirectory[countryCode][regionName];
-                }
-
-                return 0;
             },
 
             /**
@@ -130,16 +97,6 @@ define(
             },
 
             /**
-             * Set and get is logged in
-             */
-            setIsLoggedIn: function (value) {
-                this.isLoggedIn = value;
-            },
-            getIsLoggedIn: function () {
-                return this.isLoggedIn;
-            },
-
-            /**
              * Set and get store code
              */
             setStoreCode: function (value) {
@@ -150,14 +107,13 @@ define(
             },
 
             /**
-             * API Urls for logged in / guest
+             * Set and get store code
              */
-            getApiUrl: function (uri) {
-                if (this.getIsLoggedIn() === true) {
-                    return 'rest/' + this.getStoreCode() + '/V1/carts/mine/' + uri;
-                }
-                return 'rest/' + this.getStoreCode() + '/V1/guest-carts/' + this.getQuoteId() + '/' + uri;
-
+            setPriceIncludesTax: function (value) {
+                this.priceIncludesTax = value;
+            },
+            getPriceIncludesTax: function () {
+                return this.priceIncludesTax;
             },
 
             /**
@@ -194,11 +150,8 @@ define(
 
                 this.shippingAddress = payload.address;
 
-                // POST to endpoint for shipping methods.
-                storage.post(
-                    this.getApiUrl('estimate-shipping-methods'),
-                    JSON.stringify(payload)
-                ).done(function (result) {
+                getShippingMethods(payload, this.getStoreCode(), this.getQuoteId())
+                .done(function (result) {
                     // Stop if no shipping methods.
                     let virtualFlag = false,
                         shippingMethods = [],
@@ -255,7 +208,7 @@ define(
                             'address': {
                                 'countryId': this.shippingAddress.country_id,
                                 'region': this.shippingAddress.region,
-                                'regionId': this.getRegionId(
+                                'regionId': regionDataModel.getRegionId(
                                     this.shippingAddress.country_id, this.shippingAddress.region),
                                 'postcode': this.shippingAddress.postcode
                             },
@@ -267,10 +220,8 @@ define(
                     };
 
                     // POST to endpoint to get totals, using 1st shipping method
-                    storage.post(
-                        this.getApiUrl('totals-information'),
-                        JSON.stringify(totalsPayload)
-                    ).done(function (totals) {
+                    updateTotals(totalsPayload, this.getStoreCode(), this.getQuoteId())
+                    .done(function (totals) {
                         // Set total
                         this.setGrandTotalAmount(totals.base_grand_total);
 
@@ -282,11 +233,7 @@ define(
                                 label: this.getDisplayName(),
                                 amount: this.getGrandTotalAmount()
                             },
-                            [{
-                                type: 'final',
-                                label: $t('Shipping'),
-                                amount: virtualFlag ? 0 : shippingMethods[0].amount
-                            }]
+                            getApplePayLineItems(totals, this.getPriceIncludesTax()),
                         );
                     }.bind(this)).fail(function (error) {
                         session.abort();
@@ -316,7 +263,7 @@ define(
                             'address': {
                                 'countryId': this.shippingAddress.country_id,
                                 'region': this.shippingAddress.region,
-                                'regionId': this.getRegionId(this.shippingAddress.country_id,
+                                'regionId': regionDataModel.getRegionId(this.shippingAddress.country_id,
                                     this.shippingAddress.region),
                                 'postcode': this.shippingAddress.postcode
                             },
@@ -327,11 +274,8 @@ define(
 
                 this.shippingMethod = shippingMethod.identifier;
 
-
-                storage.post(
-                    this.getApiUrl('totals-information'),
-                    JSON.stringify(payload)
-                ).done(function (r) {
+                updateTotals(payload, this.getStoreCode(), this.getQuoteId())
+                .done(function (r) {
                     this.setGrandTotalAmount(r.base_grand_total);
 
                     session.completeShippingMethodSelection(
@@ -340,11 +284,7 @@ define(
                             label: this.getDisplayName(),
                             amount: this.getGrandTotalAmount()
                         },
-                        [{
-                            type: 'final',
-                            label: $t('Shipping'),
-                            amount: shippingMethod.amount
-                        }]
+                        getApplePayLineItems(r, this.getPriceIncludesTax())
                     );
                 }.bind(this));
             },
@@ -365,7 +305,7 @@ define(
                                 'street': shippingContact.addressLines,
                                 'city': shippingContact.locality,
                                 'region': shippingContact.administrativeArea,
-                                'region_id': this.getRegionId(
+                                'region_id': regionDataModel.getRegionId(
                                     shippingContact.countryCode.toUpperCase(), shippingContact.administrativeArea),
                                 'region_code': null,
                                 'country_id': shippingContact.countryCode.toUpperCase(),
@@ -382,7 +322,7 @@ define(
                                 'street': billingContact.addressLines,
                                 'city': billingContact.locality,
                                 'region': billingContact.administrativeArea,
-                                'region_id': this.getRegionId(
+                                'region_id': regionDataModel.getRegionId(
                                     billingContact.countryCode.toUpperCase(), billingContact.administrativeArea),
                                 'region_code': null,
                                 'country_id': billingContact.countryCode.toUpperCase(),
@@ -399,46 +339,32 @@ define(
                     };
 
                 // Set addresses
-                storage.post(
-                    this.getApiUrl('shipping-information'),
-                    JSON.stringify(payload)
-                ).done(function () {
-                    // Submit payment information
-                    let paymentInformation = {
-                        'email': shippingContact.emailAddress,
-                        'paymentMethod': {
-                            'method': 'braintree_applepay',
-                            'additional_data': {
-                                'payment_method_nonce': nonce,
-                                'device_data': device_data
-                            }
-                        }
-                    };
 
-                    if (window.checkout && window.checkout.agreementIds) {
-                        paymentInformation.paymentMethod.extension_attributes = {
-                            'agreement_ids': window.checkout.agreementIds
+                setShippingInformation(payload, this.getStoreCode(), this.getQuoteId())
+                    .then(() => {
+                        // Submit payment information
+                        let paymentInformation = {
+                            'email': shippingContact.emailAddress,
+                            'paymentMethod': {
+                                'method': 'braintree_applepay',
+                                'additional_data': {
+                                    'payment_method_nonce': nonce,
+                                    'device_data': device_data
+                                }
+                            }
                         };
-                    }
-                    storage.post(
-                        this.getApiUrl('payment-information'),
-                        JSON.stringify(paymentInformation)
-                    ).done(function () {
-                        document.location = this.getActionSuccess();
+
+                        return createPayment(paymentInformation, this.getStoreCode(), this.getQuoteId())
+                    })
+                    .then(() => {
                         session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-                    }.bind(this)).fail(function (r) {
+                        document.location = this.getActionSuccess();
+                    })
+                    .catch(function () {
                         session.completePayment(window.ApplePaySession.STATUS_FAILURE);
-                        session.abort();
-                        // eslint-disable-next-line
                         alert($t('We\'re unable to take your payment through Apple Pay. Please try an again or use an alternative payment method.'));
-                        console.error('Braintree ApplePay Unable to take payment', r);
                         return false;
                     });
-
-                }.bind(this)).fail(function (r) {
-                    console.error('Braintree ApplePay Unable to set shipping information', r);
-                    session.completePayment(window.ApplePaySession.STATUS_INVALID_BILLING_POSTAL_ADDRESS);
-                });
             }
         });
     });

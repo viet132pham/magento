@@ -14,6 +14,7 @@ define([
     'Magento_Checkout/js/model/full-screen-loader',
     'braintree',
     'braintreeHostedFields',
+    'braintreeDataCollector',
     'mage/url'
 ], function (
     ko,
@@ -26,6 +27,7 @@ define([
     fullScreenLoader,
     client,
     hostedFields,
+    dataCollector,
     url
 ) {
     'use strict';
@@ -45,6 +47,7 @@ define([
             vaultedCVV: ko.observable(''),
             validatorManager: validatorManager,
             isValidCvv: false,
+            deviceData: null,
             onInstanceReady: function (instance) {
                 instance.on('validityChange', this.onValidityChange.bind(this));
             }
@@ -126,6 +129,24 @@ define([
                         message: clientError.message
                     });
                 }
+
+                let options = {
+                    client: clientInstance
+                };
+
+                if (typeof Braintree.config.dataCollector === 'object'
+                    && typeof Braintree.config.dataCollector.paypal === 'boolean'
+                ) {
+                    options.paypal = true;
+                }
+
+                dataCollector.create(options, function (err, dataCollectorInstance) {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    self.deviceData = dataCollectorInstance.deviceData;
+                }.bind(this)); //eslint-disable-line no-extra-bind
+
                 hostedFields.create({
                     client: clientInstance,
                     fields: {
@@ -286,7 +307,9 @@ define([
                     formComponent.setPaymentMethodNonce(response.paymentMethodNonce);
                     formComponent.setCreditCardBin(response.details.bin);
                     formComponent.additionalData['public_hash'] = self.publicHash;
+                    formComponent.additionalData['device_data'] = self.deviceData;
                     formComponent.code = self.code;
+                    formComponent.messageContainer = self.messageContainer;
                     if (self.vaultedCVV()) {
                         formComponent.additionalData['cvv'] = self.vaultedCVV();
                     }

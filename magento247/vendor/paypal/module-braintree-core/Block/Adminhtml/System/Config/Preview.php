@@ -1,9 +1,8 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
-
 declare(strict_types=1);
 
 namespace PayPal\Braintree\Block\Adminhtml\System\Config;
@@ -12,6 +11,7 @@ use Braintree\Result\Error;
 use Braintree\Result\Successful;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\ScopeInterface;
 use PayPal\Braintree\Gateway\Config\PayPal\Config;
 use PayPal\Braintree\Model\Ui\ConfigProvider;
@@ -38,7 +38,7 @@ class Preview extends Field
     /**
      * @var Config $config
      */
-    protected Config $config;
+    private Config $config;
 
     /**
      * @var BraintreeConfig $braintreeConfig
@@ -131,7 +131,7 @@ class Preview extends Field
      */
     public function getCurrency(): ?string
     {
-        return $this->_storeManager->getStore()->getBaseCurrencyCode();
+        return $this->_storeManager->getStore($this->getStoreId())->getBaseCurrencyCode();
     }
 
     /**
@@ -141,7 +141,7 @@ class Preview extends Field
      */
     public function getAmount(): ?float
     {
-        return 1000.00;
+        return 200.00;
     }
 
     /**
@@ -151,7 +151,7 @@ class Preview extends Field
      */
     public function isPayPalActive(): bool
     {
-        return $this->config->isActive();
+        return $this->config->isActive($this->getStoreId());
     }
 
     /**
@@ -161,7 +161,7 @@ class Preview extends Field
      */
     public function isCreditActive(): bool
     {
-        return $this->payPalCreditConfig->isActive();
+        return $this->payPalCreditConfig->isActive($this->getStoreId());
     }
 
     /**
@@ -171,7 +171,7 @@ class Preview extends Field
      */
     public function isPayLaterActive(): bool
     {
-        return $this->payPalPayLaterConfig->isActive();
+        return $this->payPalPayLaterConfig->isActive($this->getStoreId());
     }
 
     /**
@@ -184,16 +184,6 @@ class Preview extends Field
     public function showPayPalButton(string $type, string $location): bool
     {
         return $this->config->showPayPalButton($type, $location);
-    }
-
-    /**
-     * Get merchant name
-     *
-     * @return string|null
-     */
-    public function getMerchantName(): ?string
-    {
-        return $this->config->getMerchantName();
     }
 
     /**
@@ -245,6 +235,7 @@ class Preview extends Field
      * @param string $location
      * @return string
      * @deprecated as Size field is redundant
+     * @see No Alternative
      */
     public function getButtonSize(string $type, string $location = Config::BUTTON_AREA_CART): string
     {
@@ -272,7 +263,7 @@ class Preview extends Field
      */
     public function getEnvironment(): string
     {
-        return $this->braintreeConfig->getEnvironment();
+        return $this->braintreeConfig->getEnvironment($this->getStoreId());
     }
 
     /**
@@ -284,7 +275,7 @@ class Preview extends Field
      */
     public function getClientToken(): Error|Successful|string|null
     {
-        return $this->configProvider->getClientToken();
+        return $this->configProvider->getClientToken($this->getStoreId());
     }
 
     /**
@@ -294,55 +285,7 @@ class Preview extends Field
      */
     public function getMerchantCountry(): ?string
     {
-        return $this->payPalPayLaterConfig->getMerchantCountry();
-    }
-
-    /**
-     * Get messaging layout
-     *
-     * @param string $type
-     * @param string $location
-     * @return string
-     */
-    public function getMessagingLayout(string $type, string $location = Config::BUTTON_AREA_CART): string
-    {
-        return $this->getConfigValue($location, $type, 'layout', $this->getScopeType());
-    }
-
-    /**
-     * Get messaging logo
-     *
-     * @param string $type
-     * @param string $location
-     * @return string
-     */
-    public function getMessagingLogo(string $type, string $location = Config::BUTTON_AREA_CART): string
-    {
-        return $this->getConfigValue($location, $type, 'logo', $this->getScopeType());
-    }
-
-    /**
-     * Get messaging logo position
-     *
-     * @param string $type
-     * @param string $location
-     * @return string
-     */
-    public function getMessagingLogoPosition(string $type, string $location = Config::BUTTON_AREA_CART): string
-    {
-        return $this->getConfigValue($location, $type, 'logo_position', $this->getScopeType());
-    }
-
-    /**
-     * Get messaging text color
-     *
-     * @param string $type
-     * @param string $location
-     * @return string
-     */
-    public function getMessagingTextColor(string $type, string $location = Config::BUTTON_AREA_CART): string
-    {
-        return $this->getConfigValue($location, $type, 'text_color', $this->getScopeType());
+        return $this->payPalPayLaterConfig->getMerchantCountry($this->getStoreId());
     }
 
     /**
@@ -361,6 +304,24 @@ class Preview extends Field
             return [$scopeType, $websiteId];
         }
         return $scopeType;
+    }
+
+    /**
+     * Get Store ID
+     *
+     * @return int|null
+     * @throws LocalizedException
+     */
+    public function getStoreId(): ?int
+    {
+        if ($websiteId = $this->getRequest()->getParam('website')) {
+            $store = $this->_storeManager->getStoreByWebsiteId($websiteId);
+            if (isset($store[0])) {
+                return (int) $this->_storeManager->getStore($store[0])->getId();
+            }
+        }
+
+        return null;
     }
 
     /**

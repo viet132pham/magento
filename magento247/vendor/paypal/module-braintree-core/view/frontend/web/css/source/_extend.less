@@ -71,15 +71,13 @@
         background-position: 50% 50%;
         background-repeat: no-repeat;
         background-size: 100% ~'calc(60% + 2px)';
-        border: 1px solid @color-black;
         border-radius: 5px;
         cursor: pointer;
         display: block;
-        margin: 20px auto;
+        height: 40px;
         min-height: 40px;
-        padding: 2px;
+        margin: 20px auto;
         transition: background-color .15s;
-        width: 200px;
     }
 
     .braintree-applepay-minicart.minicart,
@@ -238,8 +236,7 @@
     }
 
     button.braintree-googlepay-button.long {
-        min-width: 152px;
-        width: 240px;
+        width: 100%;
     }
 
     button.braintree-googlepay-button.white.long {
@@ -250,15 +247,7 @@
         background-image: url(https://www.gstatic.com/instantbuy/svg/dark/en.svg);
     }
 
-    .googlepay-minicart-logo.minicart,
-    .googlepay-minicart-logo.cart {
-        .braintree-googlepay-button.long {
-            width: 100%;
-        }
-    }
-
     .googlepay-minicart-logo {
-        margin-top: 15px;
         text-align: center;
     }
 
@@ -376,6 +365,11 @@
         }
     }
 
+    #braintree-applepay-checkout-btn,
+    #braintree-google-checkout-btn {
+        width: 240px;
+    }
+
     //
     //  Paypal
     //  ---------------------------------------------
@@ -437,6 +431,7 @@
         >div {
             display: flex;
             flex-wrap: wrap;
+            gap: @indent__s;
         }
 
         span {
@@ -474,8 +469,6 @@
         }
 
         >div>div {
-            margin-top: @indent__xs;
-            padding-right: @indent__xs;
             width: 240px;
         }
 
@@ -492,9 +485,23 @@
             }
 
             &-apple-pay-button {
-                height: 29px;
-                width: 234px;
+                height: 35px;
             }
+        }
+    }
+
+    .paypal-braintree-paylater-message-container {
+        &-pdp {
+            padding: 0 10px 10px;
+
+            .page-product-bundle,
+            .page-product-giftcard & {
+                padding: 0 0 10px;
+            }
+        }
+
+        &-cart {
+            padding: 0 15px;
         }
     }
 }
@@ -527,7 +534,6 @@
 
             &-apple-pay-button {
                 height: 45px;
-                width: ~'calc(100% - 10px)';
             }
         }
     }
@@ -536,5 +542,15 @@
 .media-width(@extremum, @break) when (@extremum ='min') and (@break =@screen__m) {
     .braintree-express-paylater-message-container {
         order: 1;
+    }
+
+    .paypal-braintree-paylater-message-container {
+        &-pdp {
+            padding: 0 0 10px;
+        }
+
+        &-cart {
+            padding: 0;
+        }
     }
 }

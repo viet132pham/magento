@@ -124,7 +124,7 @@ class Proxy extends \PayPal\Braintree\Model\Adapter\BraintreeAdapter implements 
     /**
      * {@inheritdoc}
      */
-    public function privateKey($value = null)
+    public function privateKey(?string $value = null)
     {
         return $this->_getSubject()->privateKey($value);
     }
@@ -180,7 +180,7 @@ class Proxy extends \PayPal\Braintree\Model\Adapter\BraintreeAdapter implements 
     /**
      * {@inheritdoc}
      */
-    public function submitForSettlement(string $transactionId, $amount = null, $attribs = [])
+    public function submitForSettlement(string $transactionId, ?float $amount = null, $attribs = [])
     {
         return $this->_getSubject()->submitForSettlement($transactionId, $amount, $attribs);
     }
@@ -188,7 +188,7 @@ class Proxy extends \PayPal\Braintree\Model\Adapter\BraintreeAdapter implements 
     /**
      * {@inheritdoc}
      */
-    public function submitForPartialSettlement(string $transactionId, $amount = null, $attribs = [])
+    public function submitForPartialSettlement(string $transactionId, ?float $amount = null, $attribs = [])
     {
         return $this->_getSubject()->submitForPartialSettlement($transactionId, $amount, $attribs);
     }
@@ -204,7 +204,7 @@ class Proxy extends \PayPal\Braintree\Model\Adapter\BraintreeAdapter implements 
     /**
      * {@inheritdoc}
      */
-    public function refund(string $transactionId, $amount = null)
+    public function refund(string $transactionId, ?float $amount = null)
     {
         return $this->_getSubject()->refund($transactionId, $amount);
     }

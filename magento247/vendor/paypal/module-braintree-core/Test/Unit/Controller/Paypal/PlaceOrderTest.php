@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Test\Unit\Controller\Paypal;
 
 use Magento\Framework\Exception\NotFoundException;
@@ -68,7 +69,7 @@ class PlaceOrderTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(['getPostValue'])
+            ->addMethods(['getPostValue'])
             ->getMockForAbstractClass();
         $this->resultFactoryMock = $this->getMockBuilder(ResultFactory::class)
             ->disableOriginalConstructor()
@@ -193,7 +194,7 @@ class PlaceOrderTest extends TestCase
     private function getResultMock(): ResultInterface|MockObject
     {
         return $this->getMockBuilder(ResultInterface::class)
-            ->setMethods(['setPath'])
+            ->addMethods(['setPath'])
             ->getMockForAbstractClass();
     }
 

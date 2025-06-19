@@ -30,12 +30,12 @@ define([
             id: 'braintree-applepay-express-payment',
             isActive: !_.isEmpty(config),
             clientToken: _.get(config, 'clientToken', null),
-            quoteId: window.checkoutConfig.quoteId,
+            quoteId: window.checkoutConfig.quoteData.entity_id,
             displayName: _.get(config, 'merchantName', null),
             actionSuccess: url.build('checkout/onepage/success'),
             grandTotalAmount: window.checkoutConfig.quoteData.base_grand_total,
-            isLoggedIn: false,
-            storeCode: window.checkoutConfig.storeCode
+            storeCode: window.checkoutConfig.storeCode,
+            priceIncludesTax: _.get(config, 'priceIncludesTax', true)
         },
 
         /**
@@ -59,8 +59,6 @@ define([
                 this.displayName = $t('Store');
             }
 
-            this.isLoggedIn = window.checkoutConfig.customer_is_guest === '1' ? 'true' : 'false';
-
             let api = new buttonApi();
 
             api.setGrandTotalAmount(formatAmount(this.grandTotalAmount));
@@ -68,8 +66,8 @@ define([
             api.setDisplayName(this.displayName);
             api.setQuoteId(this.quoteId);
             api.setActionSuccess(this.actionSuccess);
-            api.setIsLoggedIn(this.isLoggedIn);
             api.setStoreCode(this.storeCode);
+            api.setPriceIncludesTax(this.priceIncludesTax);
 
             // Attach the button
             button.init(

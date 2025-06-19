@@ -2,10 +2,9 @@
  * General express payment component that initializes braintree payment buttons
  */
 define([
-    'jquery',
     'uiComponent',
     'domReady!'
-], function ($, Component) {
+], function (Component) {
     'use strict';
 
     return Component.extend({

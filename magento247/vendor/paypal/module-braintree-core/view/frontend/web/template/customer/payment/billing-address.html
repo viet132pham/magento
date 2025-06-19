@@ -37,7 +37,7 @@
                     <select data-bind="options: addressModal.viewModel.currentAddresses, optionsText: 'street',
                             optionsValue: 'id',
                             value: addressModal.viewModel.currentShippingId,
-                            event:{ change: addressModal.updateCurrentAddressId.bind(addressModal) }"
+                            event:{ change: addressModal.updateCurrentAddressId?.bind(addressModal) }"
                         class="existing-address-select" name="billing_address_id">
                     </select>
                 </fieldset>

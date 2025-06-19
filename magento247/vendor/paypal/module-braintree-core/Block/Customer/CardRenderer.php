@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Block\Customer;
 
 use Magento\Framework\View\Element\Template\Context;
@@ -80,9 +81,9 @@ class CardRenderer extends AbstractTokenRenderer implements CardRendererInterfac
     /**
      * Get Icon Height
      *
-     * @return int
+     * @return int|null
      */
-    public function getIconHeight(): int
+    public function getIconHeight(): ?int
     {
         return $this->getIconForType($this->getTokenDetails()['type'])['height'];
     }
@@ -90,14 +91,16 @@ class CardRenderer extends AbstractTokenRenderer implements CardRendererInterfac
     /**
      * Get Icon Width
      *
-     * @return int
+     * @return int|null
      */
-    public function getIconWidth(): int
+    public function getIconWidth(): ?int
     {
         return $this->getIconForType($this->getTokenDetails()['type'])['width'];
     }
 
     /**
+     * Get icon type
+     *
      * @param string $type
      * @return array
      * @since 100.1.0

@@ -18,27 +18,17 @@
                 'data-label': buttonLabel,
                 'data-color': buttonColor,
                 'data-shape': buttonShape,
-                'data-requiredbillingaddress': getIsRequiredBillingAddress()
-                }"
-             id="paypal-braintree-express-paylater"
-             class="action-braintree-paypal-logo express-paylater"></div>
-    </div>
-
-    <!-- ko if: isMethodMessageActive() -->
-    <div class="action-braintree-paypal-message"
-         data-bind="attr: {
-                'data-pp-amount': checkoutAmount,
-                'data-currency-symbol': checkoutLocale,
-                'data-amount': checkoutAmount,
+                'data-requiredbillingaddress': getIsRequiredBillingAddress(),
+                'data-storecode': storeCode,
+                'data-skiporderreviewstep': skipOrderReviewStep,
+                'data-message-active': isMethodMessageActive(),
                 'data-messaging-layout': messageLayout,
                 'data-messaging-logo': messageLogo,
                 'data-messaging-logo-position': messageLogoPosition,
                 'data-messaging-text-color': messageTextColor,
-                }"
-         data-pp-type="cart"
-         id="paypal-braintree-express-paylater-message"
-         data-currency-symbol=""
-    ></div>
-    <!-- /ko -->
+            }"
+             id="paypal-braintree-express-paylater"
+             class="action-braintree-paypal-logo express-paylater"></div>
+    </div>
 </div>
 <!-- /ko -->

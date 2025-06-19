@@ -17,9 +17,8 @@
                     visible: isRadioButtonVisible()">
         <label class="label" data-bind="attr: {'for': getId()}">
             <img data-bind="attr: {
-            'src': getGooglePayIcons(getCardType()).url,
-            'width': getGooglePayIcons(getCardType()).width,
-            'height': getGooglePayIcons(getCardType()).height
+                'src': getPaymentMarkSrc(),
+                'width': 60
             }" class="payment-icon" alt="Google Pay Card Icon">
             <span translate="'ending'"></span>
             <span text="getMaskedCard()"></span>

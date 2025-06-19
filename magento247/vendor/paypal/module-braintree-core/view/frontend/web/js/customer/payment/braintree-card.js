@@ -8,19 +8,33 @@ define([
     'braintreeThreeDSecure',
     'Magento_Checkout/js/model/payment/additional-validators',
     'PayPal_Braintree/js/helper/get-braintree-config',
-    'PayPal_Braintree/js/view/payment/adapter'
-], function (Component, $, ko, _,  $t, uiRegistry, threeDSecure, additionalValidators, getBraintreeConfig, braintree) {
+    'PayPal_Braintree/js/view/payment/adapter',
+    'mage/url'
+], function (
+    Component,
+    $,
+    ko,
+    _,
+    $t,
+    uiRegistry,
+    threeDSecure,
+    additionalValidators,
+    getBraintreeConfig,
+    braintree,
+    urlBuilder
+) {
     'use strict';
 
     /**
      * braintree is not an instance of Component so we need to merge in our changes
      * and return an instance of Component with the final merged object.
      */
-    var uiC = _.extend(braintree, {
+    const uiC = _.extend(braintree, {
         clientToken: null,
         uiConfig: null,
         paymentMethodNonce: null,
         selectedCardType: null,
+        storeCode: null,
 
         isValidCardNumber: false,
         isValidExpirationDate: false,
@@ -32,6 +46,8 @@ define([
             paymentMethodCode: 'braintree',
             total: ko.observable(0),
             isThreeDSecureEnabled: ko.observable(false),
+            ipAddress: ko.observable(''),
+            merchantAccountId: ko.observable(),
             selectedMethod: {
                 price: ko.observable(0)
             },
@@ -53,12 +69,15 @@ define([
                 'selectedCardType'
             ]);
 
-            await this.getBraintreeConfig();
+            this.storeCode = uiConfig.storeCode;
+
+            await this.getBraintreeConfig(this.storeCode);
 
             this.uiConfig = uiConfig;
             this.icons = uiConfig.icons;
             this.cvvImage = uiConfig.cvvImage;
             this.viewModel.isThreeDSecureEnabled(uiConfig.isThreeDSecureEnabled);
+            this.viewModel.ipAddress(uiConfig.ipAddress);
             this.viewModel.total(parseFloat(uiConfig.amount).toFixed(2));
 
             let self = this;
@@ -112,7 +131,6 @@ define([
                         this.paymentMethodNonce = paymentMethodNonce;
                     },
 
-
                     /**
                      * After Braintree instance initialization
                      */
@@ -156,7 +174,7 @@ define([
 
                     onPaymentMethodReceived: function (response) {
                         $.ajax({
-                            url: '/rest/default/V1/braintree/mine/payment/vault',
+                            url: self.getVaultUrl(),
                             type: 'POST',
                             data: JSON.stringify({
                                 billingAddress: {},
@@ -186,6 +204,7 @@ define([
 
         /**
          * Get list of card types
+         *
          * @returns {Object}
          */
         getCcTypesMapper: function () {
@@ -194,12 +213,13 @@ define([
 
         /**
          * Find mage card type by Braintree type
+         *
          * @param {String} type
          * @param {Object} availableTypes
          * @returns {*}
          */
         getMageCardType: function (type, availableTypes) {
-            var storedCardType = null,
+            let storedCardType = null,
                 mapper = this.getCcTypesMapper();
 
             if (type && typeof mapper[type] !== 'undefined') {
@@ -213,15 +233,21 @@ define([
             return null;
         },
 
-        getBraintreeConfig: function () {
-            return getBraintreeConfig()
+        /**
+         * Get Braintree config and set merchantAccountId
+         *
+         * @returns {*}
+         */
+        getBraintreeConfig: function (storeCode) {
+            return getBraintreeConfig(storeCode)
                 .then(response => {
-                    this.merchantAccountId = response.data.storeConfig.braintree_merchant_account_id;
+                    this.viewModel.merchantAccountId(response.data.storeConfig.braintree_merchant_account_id);
                 });
         },
 
         /**
          * Triggers on Hosted Field changes
+         *
          * @param {Object} event
          * @returns {Boolean}
          */
@@ -265,6 +291,13 @@ define([
             }
         },
 
+        /**
+         * Wait for element to render
+         *
+         * @param selector
+         * @returns {Promise<unknown>}
+         * @private
+         */
         _waitForElm: function (selector) {
             return new Promise(resolve => {
                 if (document.querySelector(selector)) {
@@ -313,7 +346,7 @@ define([
         /**
          * Get card icons
          *
-         * @param {String} type
+         * @param {String} findType
          * @returns {Object|Boolean}
          */
         getIcons: function (findType) {
@@ -327,7 +360,7 @@ define([
          * @returns {boolean}
          */
         validateField: function (selector, state) {
-            var $selector = $(this.getSelector(selector)),
+            let $selector = $(this.getSelector(selector)),
                 invalidClass = 'braintree-hosted-fields-invalid';
 
             if (state === true) {
@@ -395,7 +428,6 @@ define([
          * Prepare data to place order
          */
         handleNonce: function () {
-
             $('body').trigger('processStart');
             this.viewModel.errorMessage('');
 
@@ -463,8 +495,13 @@ define([
                                 amount: this.viewModel.total(),
                                 nonce: payload.nonce,
                                 bin: payload.details.bin,
+                                collectDeviceData: true,
                                 cardAddChallengeRequested: true,
                                 vault: true,
+
+                                additionalInformation: {
+                                    ipAddress: this.viewModel.ipAddress()
+                                },
 
                                 onLookupComplete: function (data, next) {
                                     next();
@@ -487,7 +524,6 @@ define([
 
                                     // Validation Passed
                                     callback();
-
                                 } else {
                                     // eslint-disable-next-line max-len
                                     this.viewModel.errorMessage($t('We could not validate your payment method. Please try again with another form of payment.'));
@@ -503,6 +539,15 @@ define([
                 .catch(function () {
                     $('body').trigger('processStop');
                 });
+        },
+
+        /**
+         * Get card vault url
+         *
+         * @returns {*}
+         */
+        getVaultUrl: function () {
+            return urlBuilder.build('rest/' + this.storeCode + '/V1/braintree/mine/payment/vault');
         }
     });
 

@@ -48,25 +48,37 @@ define([
             };
         },
 
+        /**
+         * Show add card modal
+         */
         showAddCardModal: function () {
             this.addNewCardVM.visible(true);
 
             $('html, body').animate({scrollTop: 0}, 400);
         },
 
+        /**
+         * Hide add card modal
+         */
         hideAddCardModal: function () {
             this.addNewCardVM.visible(false);
         },
 
+        /**
+         * Show add PayPal modal
+         */
         showAddPayPalModal: function () {
-            var braintreePaypal = registry.get('new-form-braintree-paypal');
+            let braintreePaypal = registry.get('new-form-braintree-paypal');
 
             braintreePaypal.setup();
             this.addNewPayPalVM.visible(true);
         },
 
+        /**
+         * Show add PayPal modal
+         */
         hideAddPayPalModal: function () {
-            var braintreePaypal = registry.get('new-form-braintree-paypal');
+            let braintreePaypal = registry.get('new-form-braintree-paypal');
 
             braintreePaypal.teardownPayPalInstance();
             this.addNewPayPalVM.visible(false);

@@ -61,17 +61,6 @@
             <!-- ko if: (isPayLaterEnabled())-->
             <div data-bind="attr: {id: getPayLaterButtonId()}"></div>
             <!-- /ko -->
-            <!-- ko if: (isPayLaterEnabled() && isPayLaterMessageEnabled())-->
-            <div data-pp-message data-pp-placement="payment"
-                 data-bind="attr: {
-                    'data-pp-amount': getGrandTotalAmount(),
-                    'data-pp-style-layout': getMessagingLayout(),
-                    'data-pp-style-logo-type': getMessagingLogo(),
-                    'data-pp-style-logo-position': getMessagingLogoPosition(),
-                    'data-pp-style-text-color': getMessagingTextColor()
-                 }">
-            </div>
-            <!-- /ko -->
         </div>
     </div>
 </div>

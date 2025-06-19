@@ -37,9 +37,9 @@
                         <!-- ko ifnot: icon.type === 'NONE' -->
                             <div class="item">
                                 <img data-bind="attr: {
-                                                'src': icon.url,
-                                                'alt': icon.type
-                                            }">
+                                    'src': icon.url,
+                                    'alt': icon.type
+                                }">
                             </div>
                         <!--/ko-->
                     <!--/ko-->
@@ -82,7 +82,7 @@
         </fieldset>
 
         <!-- ko foreach: elems -->
-        <!-- ko template: {name: getTemplate(), afterRender: function(){ showAddressModal(null, null, null); }} --><!-- /ko -->
+        <!-- ko template: {name: getTemplate(), afterRender: function(){ showAddressModal($parent.storeCode); }} --><!-- /ko -->
         <!-- /ko -->
 
         <input type="hidden" name="braintree-cc-payment-method-nonce" id="braintree-cc-payment-method-nonce">

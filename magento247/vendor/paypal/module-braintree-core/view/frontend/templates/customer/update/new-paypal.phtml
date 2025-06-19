@@ -10,10 +10,14 @@
  *
  * @var Button $block
  * @var Escaper $escaper
+ * @var BraintreePayPalConfig $braintreePayPalConfigViewModel
  */
 
 use Magento\Framework\Escaper;
 use PayPal\Braintree\Block\Paypal\Button;
+use PayPal\Braintree\ViewModel\BraintreePayPalConfig;
+
+$braintreePayPalConfigViewModel = $block->getData('braintreePayPalConfigViewModel');
 ?>
 
 <div data-bind="scope: 'new-form-braintree-paypal'">
@@ -45,7 +49,8 @@ use PayPal\Braintree\Block\Paypal\Button;
                         "layout" : "<?= /* @noEscape */ $block->getButtonLayout('paypal'); ?>",
                         "color" : "<?= /* @noEscape */ $block->getButtonColor('paypal'); ?>",
                         "disabledFunding" : <?= /* @noEscape */ json_encode($block->getDisabledFunding()); ?>,
-                        "environment" : "<?= /* @noEscape */ $block->getEnvironment(); ?>"
+                        "environment" : "<?= /* @noEscape */ $block->getEnvironment(); ?>",
+                        "storeCode" : "<?= /* @noEscape */ $braintreePayPalConfigViewModel->getStoreCode(); ?>"
                     }
                 }
             }

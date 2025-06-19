@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -78,7 +78,7 @@ class VaultTokenRenderer extends AbstractTokenRenderer implements CardRendererIn
      */
     public function getIconUrl(): string
     {
-        return $this->getIconForType($this->getTokenDetails()['type'] ?? '')['url'];
+        return $this->getIconForType()['url'];
     }
 
     /**
@@ -89,7 +89,7 @@ class VaultTokenRenderer extends AbstractTokenRenderer implements CardRendererIn
      */
     public function getIconHeight(): int
     {
-        return $this->getIconForType($this->getTokenDetails()['type'] ?? '')['height'];
+        return $this->getIconForType()['height'];
     }
 
     /**
@@ -100,23 +100,18 @@ class VaultTokenRenderer extends AbstractTokenRenderer implements CardRendererIn
      */
     public function getIconWidth(): int
     {
-        return $this->getIconForType($this->getTokenDetails()['type'] ?? '')['width'];
+        return $this->getIconForType()['width'];
     }
 
     /**
      * Get Icon type
      *
-     * @param string $type
      * @return array
      * @throws LocalizedException
      * @since 100.1.0
      */
-    private function getIconForType(string $type): array
+    private function getIconForType(): array
     {
-        return $this->configProvider->getIcons()[strtolower($type)] ?? [
-            'url' => '',
-            'width' => 0,
-            'height' => 0
-        ];
+        return $this->configProvider->getIcon();
     }
 }

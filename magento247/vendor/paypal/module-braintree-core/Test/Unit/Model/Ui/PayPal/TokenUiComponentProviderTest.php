@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Test\Unit\Model\Ui\PayPal;
 
 use Magento\Framework\Serialize\SerializerInterface;
@@ -14,6 +15,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Vault\Model\Ui\TokenUiComponentInterfaceFactory;
 use Magento\Vault\Model\Ui\TokenUiComponentInterface;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject as MockObject;
 use Psr\Log\LoggerInterface;
 
@@ -49,11 +51,14 @@ class TokenUiComponentProviderTest extends \PHPUnit\Framework\TestCase
      */
     private SerializerInterface|MockObject $serializer;
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         $this->componentFactory = $this->getMockBuilder(TokenUiComponentInterfaceFactory::class)
             ->disableOriginalConstructor()
-            ->setMethods(['create'])
+            ->onlyMethods(['create'])
             ->getMock();
 
         $braintreeConfig = $this->getMockBuilder(Config:: class)

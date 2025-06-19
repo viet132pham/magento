@@ -1558,10 +1558,15 @@
         'sortOrder' => 50,
         'instance' => 'Magento\\Captcha\\Model\\Cart\\ConfigPlugin',
       ),
-      'addAgreementsToMinicartConfig' => 
+      'addAgreementsToMiniCartConfig' => 
       array (
         'sortOrder' => 0,
-        'instance' => 'PayPal\\Braintree\\Plugin\\AddAgreementsToMinicartConfig',
+        'instance' => 'PayPal\\Braintree\\Plugin\\AddAgreementsToMiniCartConfig',
+      ),
+      'addPayLaterMessageConfig' => 
+      array (
+        'sortOrder' => 0,
+        'instance' => 'PayPal\\Braintree\\Plugin\\PayLaterMessageConfig',
       ),
     ),
     'Magento\\Inventory\\Model\\ResourceModel\\IsProductAssignedToStock' => 
@@ -3077,7 +3082,15 @@
         'instance' => 'PayPal\\Braintree\\Plugin\\AddFlagForVirtualProducts',
       ),
     ),
-    'PayPal\\Braintree\\Gateway\\Request\\Level23ProcessingDataBuilder' => 
+    'Magento\\Checkout\\CustomerData\\Cart' => 
+    array (
+      'braintreeAddMaskedIdToCartData' => 
+      array (
+        'sortOrder' => 0,
+        'instance' => 'PayPal\\Braintree\\Plugin\\AddMaskedIdToCartData',
+      ),
+    ),
+    'PayPal\\Braintree\\Gateway\\Request\\PayPal\\Level23ProcessingDataBuilder' => 
     array (
       'AddCustomerBalanceAsLineItemForPayPal' => 
       array (
@@ -3096,6 +3109,20 @@
         'sortOrder' => 3,
         'disabled' => false,
         'instance' => '\\PayPal\\BraintreeGiftWrapping\\Plugin\\Level23Processing\\PayPal\\AddGiftWrappingPlugin',
+      ),
+      'AddRewardAsLineItemForPayPal' => 
+      array (
+        'sortOrder' => 1,
+        'disabled' => false,
+        'instance' => '\\PayPal\\BraintreeReward\\Plugin\\Level23Processing\\PayPal\\AddRewardPlugin',
+      ),
+    ),
+    'PayPal\\Braintree\\Block\\Paypal\\ProductPage' => 
+    array (
+      'GetGiftCardProductPrice' => 
+      array (
+        'sortOrder' => 0,
+        'instance' => '\\PayPal\\BraintreeGiftCard\\Plugin\\ProductPageGiftCard',
       ),
     ),
   ),
@@ -7134,10 +7161,15 @@
     'Magento\\Checkout\\Block\\Cart\\AbstractCart' => NULL,
     'Magento\\Checkout\\Block\\Cart\\Sidebar' => 
     array (
-      'addAgreementsToMinicartConfig' => 
+      'addAgreementsToMiniCartConfig' => 
       array (
         'sortOrder' => 0,
-        'instance' => 'PayPal\\Braintree\\Plugin\\AddAgreementsToMinicartConfig',
+        'instance' => 'PayPal\\Braintree\\Plugin\\AddAgreementsToMiniCartConfig',
+      ),
+      'addPayLaterMessageConfig' => 
+      array (
+        'sortOrder' => 0,
+        'instance' => 'PayPal\\Braintree\\Plugin\\PayLaterMessageConfig',
       ),
       'login_captcha' => 
       array (
@@ -8757,13 +8789,27 @@
         'instance' => 'PayPal\\Braintree\\Plugin\\AddFlagForVirtualProducts',
       ),
     ),
-    'PayPal\\Braintree\\Gateway\\Request\\Level23ProcessingDataBuilder' => 
+    'Magento\\Checkout\\CustomerData\\Cart' => 
+    array (
+      'braintreeAddMaskedIdToCartData' => 
+      array (
+        'sortOrder' => 0,
+        'instance' => 'PayPal\\Braintree\\Plugin\\AddMaskedIdToCartData',
+      ),
+    ),
+    'PayPal\\Braintree\\Gateway\\Request\\PayPal\\Level23ProcessingDataBuilder' => 
     array (
       'AddCustomerBalanceAsLineItemForPayPal' => 
       array (
         'sortOrder' => 1,
         'disabled' => false,
         'instance' => 'PayPal\\BraintreeCustomerBalance\\Plugin\\Level23Processing\\PayPal\\AddCustomerBalancePlugin',
+      ),
+      'AddRewardAsLineItemForPayPal' => 
+      array (
+        'sortOrder' => 1,
+        'disabled' => false,
+        'instance' => 'PayPal\\BraintreeReward\\Plugin\\Level23Processing\\PayPal\\AddRewardPlugin',
       ),
       'AddGiftCardAccountAsLineItemForPayPal' => 
       array (
@@ -8776,6 +8822,15 @@
         'sortOrder' => 3,
         'disabled' => false,
         'instance' => 'PayPal\\BraintreeGiftWrapping\\Plugin\\Level23Processing\\PayPal\\AddGiftWrappingPlugin',
+      ),
+    ),
+    'PayPal\\Braintree\\Block\\Paypal\\Button' => NULL,
+    'PayPal\\Braintree\\Block\\Paypal\\ProductPage' => 
+    array (
+      'GetGiftCardProductPrice' => 
+      array (
+        'sortOrder' => 0,
+        'instance' => 'PayPal\\BraintreeGiftCard\\Plugin\\ProductPageGiftCard',
       ),
     ),
   ),
@@ -11608,8 +11663,9 @@
     array (
       4 => 
       array (
-        0 => 'addAgreementsToMinicartConfig',
-        1 => 'login_captcha',
+        0 => 'addAgreementsToMiniCartConfig',
+        1 => 'addPayLaterMessageConfig',
+        2 => 'login_captcha',
       ),
     ),
     'Magento\\Inventory\\Model\\ResourceModel\\IsProductAssignedToStock_execute___self' => 
@@ -12956,13 +13012,28 @@
         0 => 'braintreeAddFlagForVirtualProducts',
       ),
     ),
-    'PayPal\\Braintree\\Gateway\\Request\\Level23ProcessingDataBuilder_build___self' => 
+    'Magento\\Checkout\\CustomerData\\Cart_getSectionData___self' => 
+    array (
+      4 => 
+      array (
+        0 => 'braintreeAddMaskedIdToCartData',
+      ),
+    ),
+    'PayPal\\Braintree\\Gateway\\Request\\PayPal\\Level23ProcessingDataBuilder_build___self' => 
     array (
       4 => 
       array (
         0 => 'AddCustomerBalanceAsLineItemForPayPal',
-        1 => 'AddGiftCardAccountAsLineItemForPayPal',
-        2 => 'AddGiftWrappingAsLineItemForPayPal',
+        1 => 'AddRewardAsLineItemForPayPal',
+        2 => 'AddGiftCardAccountAsLineItemForPayPal',
+        3 => 'AddGiftWrappingAsLineItemForPayPal',
+      ),
+    ),
+    'PayPal\\Braintree\\Block\\Paypal\\ProductPage_getAmount___self' => 
+    array (
+      4 => 
+      array (
+        0 => 'GetGiftCardProductPrice',
       ),
     ),
   ),

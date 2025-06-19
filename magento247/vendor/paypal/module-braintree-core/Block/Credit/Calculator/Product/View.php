@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -82,10 +82,10 @@ class View extends Template
      *
      * @return string|bool
      */
-    public function getPriceData()
+    public function getPriceData(): bool|string
     {
         if ($this->getProduct()) {
-            $results = $this->creditPriceRepository->getByProductId($this->getProduct()->getId());
+            $results = $this->creditPriceRepository->getByProductId((int) $this->getProduct()->getId());
             if (null !== $results) {
                 $options = [];
                 foreach ($results as $option) {
@@ -110,7 +110,7 @@ class View extends Template
      *
      * @return string|null
      */
-    public function getMerchantName()
+    public function getMerchantName(): ?string
     {
         return $this->config->getMerchantName();
     }

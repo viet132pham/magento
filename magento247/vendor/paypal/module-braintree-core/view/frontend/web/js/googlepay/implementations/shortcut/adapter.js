@@ -1,14 +1,12 @@
 /*browser:true*/
 define([
     'underscore',
-    'jquery',
     'mage/translate',
     'braintree',
     'PayPal_Braintree/js/model/full-screen-loader',
     'Magento_Ui/js/model/messageList'
 ], function (
     _,
-    $,
     $t,
     client,
     defaultFullScreenLoader,

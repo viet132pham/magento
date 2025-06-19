@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -14,6 +14,7 @@ use InvalidArgumentException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandException;
 use Magento\Payment\Gateway\CommandInterface;
+use PayPal\Braintree\Gateway\Config\Config as BraintreeConfig;
 use PayPal\Braintree\Gateway\Data\AddressAdapterInterface;
 use PayPal\Braintree\Gateway\Data\PaymentAdapterInterface;
 use PayPal\Braintree\Gateway\Helper\SubjectReader;
@@ -56,10 +57,16 @@ class CreatePaymentMethodCommand implements CommandInterface
     private LoggerInterface $logger;
 
     /**
+     * @var BraintreeConfig
+     */
+    private BraintreeConfig $braintreeConfig;
+
+    /**
      * @param SubjectReader $subjectReader
      * @param GeneralResponseValidator $responseValidator
      * @param BraintreeAdapter $braintreeAdapter
      * @param PaymentTokenAdapterFactoryInterface $paymentTokenAdapterFactory
+     * @param BraintreeConfig $braintreeConfig
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -67,12 +74,14 @@ class CreatePaymentMethodCommand implements CommandInterface
         GeneralResponseValidator $responseValidator,
         BraintreeAdapter $braintreeAdapter,
         PaymentTokenAdapterFactoryInterface $paymentTokenAdapterFactory,
+        BraintreeConfig $braintreeConfig,
         LoggerInterface $logger
     ) {
         $this->subjectReader = $subjectReader;
         $this->responseValidator = $responseValidator;
         $this->braintreeAdapter = $braintreeAdapter;
         $this->paymentTokenAdapterFactory = $paymentTokenAdapterFactory;
+        $this->braintreeConfig = $braintreeConfig;
         $this->logger = $logger;
     }
 
@@ -93,6 +102,7 @@ class CreatePaymentMethodCommand implements CommandInterface
         try {
             $paymentData = $this->subjectReader->readPaymentMethodData($commandSubject);
             $addressData = $this->subjectReader->readAddressData($commandSubject);
+            $storeId = $this->subjectReader->readStoreId($commandSubject);
         } catch (InvalidArgumentException $ex) {
             $this->logger->error('Failed to perform payment method create: ' . $ex->getMessage(), [
                 'class' => CreatePaymentMethodCommand::class
@@ -109,6 +119,11 @@ class CreatePaymentMethodCommand implements CommandInterface
 
         if ($addressData !== null) {
             $requestData['billingAddress'] = $this->getAddress($addressData);
+        }
+
+        $merchantAccountId = $this->braintreeConfig->getMerchantAccountId($storeId);
+        if (!empty($merchantAccountId)) {
+            $requestData['options']['verificationMerchantAccountId'] = $merchantAccountId;
         }
 
         try {

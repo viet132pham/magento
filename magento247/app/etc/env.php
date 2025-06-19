@@ -1,41 +1,21 @@
 <?php
 return [
     'backend' => [
-        'frontName' => 'admin_qkmalcq'
+        'frontName' => 'admin_6qchar1'
     ],
     'remote_storage' => [
         'driver' => 'file'
     ],
     'cache' => [
         'graphql' => [
-            'id_salt' => 'B7Yoil6iwH4pGmIGY7g0W5Pb1rzKxNQz'
+            'id_salt' => 'tx3zA8AY1S0JiP6c3ZsInkuKUOKjMBlc'
         ],
         'frontend' => [
             'default' => [
-                'id_prefix' => '5fd_',
-                'backend' => 'Magento\\Framework\\Cache\\Backend\\Redis',
-                'backend_options' => [
-                    'server' => 'redis',
-                    'database' => '0',
-                    'port' => '6379',
-                    'password' => '',
-                    'compress_data' => '1',
-                    'compression_lib' => '',
-                    '_useLua' => true,
-                    'use_lua' => false
-                ]
+                'id_prefix' => '5fd_'
             ],
             'page_cache' => [
-                'id_prefix' => '5fd_',
-                'backend' => 'Magento\\Framework\\Cache\\Backend\\Redis',
-                'backend_options' => [
-                    'server' => 'redis',
-                    'database' => '1',
-                    'port' => '6379',
-                    'password' => '',
-                    'compress_data' => '0',
-                    'compression_lib' => ''
-                ]
+                'id_prefix' => '5fd_'
             ]
         ],
         'allow_parallel_generation' => false
@@ -47,7 +27,7 @@ return [
         'consumers_wait_for_messages' => 1
     ],
     'crypt' => [
-        'key' => 'base646fkcqSwnTB21r7isFfe/nwwAwRfGbcxxGEI0D2iUdPM='
+        'key' => 'base64fVqnkPcBn69u92HiKArpjck1OwGMytqIRowLDCoCH3U='
     ],
     'db' => [
         'table_prefix' => '',
@@ -67,39 +47,27 @@ return [
             ]
         ]
     ],
+     'system' => [
+        'default' => [
+            'catalog' => [
+                'search' => [
+                    'engine' => 'opensearch',
+                    'opensearch_server_hostname' => 'opensearch',
+                    'opensearch_server_port' => '9200',
+                    'opensearch_index_prefix' => 'magento247',
+                ]
+            ]
+        ]
+    ],
     'resource' => [
         'default_setup' => [
             'connection' => 'default'
         ]
     ],
     'x-frame-options' => 'SAMEORIGIN',
-    'MAGE_MODE' => 'developer',
+    'MAGE_MODE' => 'default',
     'session' => [
-        'save' => 'redis',
-        'redis' => [
-            'host' => 'redis',
-            'port' => '6379',
-            'password' => '',
-            'timeout' => '2.5',
-            'persistent_identifier' => '',
-            'database' => '2',
-            'compression_threshold' => '2048',
-            'compression_library' => 'gzip',
-            'log_level' => '4',
-            'max_concurrency' => '6',
-            'break_after_frontend' => '5',
-            'break_after_adminhtml' => '30',
-            'first_lifetime' => '600',
-            'bot_first_lifetime' => '60',
-            'bot_lifetime' => '7200',
-            'disable_locking' => '0',
-            'min_lifetime' => '60',
-            'max_lifetime' => '2592000',
-            'sentinel_master' => '',
-            'sentinel_servers' => '',
-            'sentinel_connect_retries' => '5',
-            'sentinel_verify_master' => '0'
-        ]
+        'save' => 'files'
     ],
     'lock' => [
         'provider' => 'db'
@@ -128,6 +96,6 @@ return [
         'magento247.loc'
     ],
     'install' => [
-        'date' => 'Thu, 05 Jun 2025 18:05:48 +0000'
+        'date' => 'Thu, 19 Jun 2025 17:38:48 +0000'
     ]
 ];

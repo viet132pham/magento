@@ -8,10 +8,10 @@ class Interceptor extends \PayPal\Braintree\Controller\Payment\UpdatePaymentMeth
 {
     use \Magento\Framework\Interception\Interceptor;
 
-    public function __construct(\Magento\Framework\App\Action\Context $context, \PayPal\Braintree\Model\Adapter\BraintreeAdapter $adapter, \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement, \Magento\Framework\Session\SessionManagerInterface $session)
+    public function __construct(\Magento\Framework\App\Action\Context $context, \PayPal\Braintree\Model\Adapter\BraintreeAdapter $adapter, \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement, \Magento\Framework\Session\SessionManagerInterface $session, \Magento\Checkout\Model\Session $checkoutSession)
     {
         $this->___init();
-        parent::__construct($context, $adapter, $tokenManagement, $session);
+        parent::__construct($context, $adapter, $tokenManagement, $session, $checkoutSession);
     }
 
     /**

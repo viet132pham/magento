@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
@@ -58,8 +58,11 @@
                 <payment_action>authorize</payment_action>
                 <allowspecific>0</allowspecific>
                 <require_billing_address>0</require_billing_address>
+                <skip_order_review_step>1</skip_order_review_step>
                 <allow_shipping_address_override>1</allow_shipping_address_override>
                 <display_on_shopping_cart>1</display_on_shopping_cart>
+                <send_package_tracking>0</send_package_tracking>
+                <tracking_notify_payer>0</tracking_notify_payer>
                 <order_status>processing</order_status>
                 <is_gateway>1</is_gateway>
                 <can_use_checkout>1</can_use_checkout>
@@ -137,9 +140,7 @@
                 <button_location_cart_type_messaging_logo_position>left</button_location_cart_type_messaging_logo_position>
                 <button_location_cart_type_messaging_text_color>black</button_location_cart_type_messaging_text_color>
                 <button_location_checkout_type_messaging_show>1</button_location_checkout_type_messaging_show>
-                <button_location_checkout_type_messaging_layout>text</button_location_checkout_type_messaging_layout>
-                <button_location_checkout_type_messaging_logo>inline</button_location_checkout_type_messaging_logo>
-                <button_location_checkout_type_messaging_logo_position>left</button_location_checkout_type_messaging_logo_position>
+                <button_location_checkout_type_messaging_text_align>left</button_location_checkout_type_messaging_text_align>
                 <button_location_checkout_type_messaging_text_color>black</button_location_checkout_type_messaging_text_color>
                 <button_location_productpage_type_messaging_show>1</button_location_productpage_type_messaging_show>
                 <button_location_productpage_type_messaging_layout>text</button_location_productpage_type_messaging_layout>
@@ -223,6 +224,7 @@
                 <privateInfoKeys>processorAuthorizationCode,processorResponseCode,processorResponseText</privateInfoKeys>
                 <paymentInfoKeys>processorAuthorizationCode,processorResponseCode,processorResponseText</paymentInfoKeys>
                 <cctypes>VISA,MASTERCARD,AMEX</cctypes>
+                <skip_order_review_step>1</skip_order_review_step>
                 <merchant_id>testmode</merchant_id>
                 <btn_color>0</btn_color>
                 <group>braintree_group</group>
@@ -305,7 +307,7 @@
                 <privateInfoKeys>processorAuthorizationCode,processorResponseCode,processorResponseText,paymentId,fundingSource</privateInfoKeys>
                 <title>Local Payments</title>
                 <fallback_button_text>Complete Payment</fallback_button_text>
-                <allowed_methods>bancontact,eps,giropay,ideal,sofort,mybank,p24,sepa</allowed_methods>
+                <allowed_methods>bancontact,eps,ideal,mybank,p24,sepa</allowed_methods>
                 <group>braintree_group</group>
             </braintree_local_payment>
             <braintree_paypal_credit>

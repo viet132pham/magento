@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -16,7 +16,6 @@ use Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory;
 use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 use PayPal\Braintree\Gateway\Config\Config;
 use PayPal\Braintree\Gateway\Helper\SubjectReader;
-use RuntimeException;
 
 class Handler
 {
@@ -66,7 +65,7 @@ class Handler
         Config $config,
         SubjectReader $subjectReader,
         DateTimeFactory $dateTime,
-        Json $serializer = null
+        ?Json $serializer = null
     ) {
         $this->paymentTokenFactory = $paymentTokenFactory;
         $this->paymentExtensionFactory = $paymentExtensionFactory;

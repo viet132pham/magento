@@ -11,6 +11,7 @@ define([
     'PayPal_Braintree/js/googlepay/implementations/shortcut/adapter',
     'PayPal_Braintree/js/helper/remove-non-digit-characters',
     'PayPal_Braintree/js/helper/format-amount',
+    'PayPal_Braintree/js/helper/is-cart-virtual',
     'PayPal_Braintree/js/model/full-screen-loader'
 ], function (
     _,
@@ -20,6 +21,7 @@ define([
     braintree,
     removeNonDigitCharacters,
     formatAmount,
+    isCartVirtual,
     defaultFullScreenLoader
 ) {
     'use strict';
@@ -194,10 +196,10 @@ define([
             let lineError = null;
 
             if (billingAddress.street[0].length > 50 ||
-                (shippingAddress.street !== undefined && shippingAddress.street[0].length > 50)) {
+                shippingAddress.street !== undefined && shippingAddress.street[0].length > 50) {
                 lineError = 'line1';
             } else if (billingAddress.street[1].length > 50 ||
-                (shippingAddress.street !== undefined && shippingAddress.street[1].length > 50)) {
+                shippingAddress.street !== undefined && shippingAddress.street[1].length > 50) {
                 lineError = 'line2';
             }
 
@@ -249,11 +251,14 @@ define([
             }
 
             // Handle shipping address region code
-            if (shippingAddress.regionCode == null) {
-                shippingAddress.regionCode = undefined;
-            }
-            if (shippingAddress.regionCode !== undefined && shippingAddress.regionCode.length > 2) {
-                shippingAddress.regionCode = undefined;
+            if (!isCartVirtual()) {
+                // Handle shipping address region code
+                if (shippingAddress.regionCode == null) {
+                    shippingAddress.regionCode = undefined;
+                }
+                if (shippingAddress.regionCode !== undefined && shippingAddress.regionCode.length > 2) {
+                    shippingAddress.regionCode = undefined;
+                }
             }
 
             if (!self.isAmountAvailable(self.getTotalAmount()) || !self.isCountryAvailable(billingAddress.countryId)) {
@@ -308,19 +313,6 @@ define([
                             countryCodeAlpha2: billingAddress.countryId
                         },
                         additionalInformation: {
-                            shippingGivenName: shippingAddress.firstname,
-                            shippingSurname: shippingAddress.lastname,
-                            shippingAddress: {
-                                streetAddress: shippingAddress.street[0],
-                                extendedAddress: shippingAddress.street[1],
-                                locality: shippingAddress.city,
-                                region: shippingAddress.regionCode,
-                                postalCode: shippingAddress.postcode,
-                                countryCodeAlpha2: shippingAddress.countryId
-                            },
-                            shippingPhone: shippingAddress.telephone !== null
-                                ? removeNonDigitCharacters(shippingAddress.telephone)
-                                : shippingAddress.telephone,
                             ipAddress: self.getIpAddress()
                         },
                         onLookupComplete: function (data, next) {
@@ -345,6 +337,25 @@ define([
 
                     if (_.has(context, 'email') && context.email !== null) {
                         threeDSecureParameters.email = context.email;
+                    }
+
+                    if (!isCartVirtual()) {
+                        threeDSecureParameters.additionalInformation = {
+                            shippingGivenName: shippingAddress.firstname,
+                            shippingSurname: shippingAddress.lastname,
+                            shippingAddress: {
+                                streetAddress: shippingAddress.street[0],
+                                extendedAddress: shippingAddress.street[1],
+                                locality: shippingAddress.city,
+                                region: shippingAddress.regionCode,
+                                postalCode: shippingAddress.postcode,
+                                countryCodeAlpha2: shippingAddress.countryId
+                            },
+                            shippingPhone: shippingAddress.telephone !== null
+                                ? removeNonDigitCharacters(shippingAddress.telephone)
+                                : shippingAddress.telephone,
+                            ipAddress: self.getIpAddress()
+                        };
                     }
 
                     threeDSecureInstance.verifyCard(threeDSecureParameters, function (err, response) {
@@ -373,7 +384,7 @@ define([
                         } else {
                             state.reject($t('Please try again with another form of payment.'));
                         }
-                    }.bind(this));
+                    }.bind(this)); //eslint-disable-line no-extra-bind
                 });
             };
 

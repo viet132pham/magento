@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -31,7 +31,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         CcConfig $ccConfig,
-        string $methodCode = null,
+        ?string $methodCode = null,
         string $pathPattern = self::DEFAULT_PATH_PATTERN,
     ) {
         parent::__construct($scopeConfig, $methodCode, $pathPattern);

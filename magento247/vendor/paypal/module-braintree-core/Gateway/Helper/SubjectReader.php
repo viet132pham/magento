@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Gateway\Helper;
 
 use Braintree\CreditCard;
@@ -225,5 +226,20 @@ class SubjectReader
         }
 
         return $subject['addressData'];
+    }
+
+    /**
+     * Read Store ID
+     *
+     * @param array $subject
+     * @return int|null
+     */
+    public function readStoreId(array $subject): ?int
+    {
+        if (!isset($subject['storeId'])) {
+            throw new InvalidArgumentException(__('The "storeId" field does not exists'));
+        }
+
+        return $subject['storeId'];
     }
 }

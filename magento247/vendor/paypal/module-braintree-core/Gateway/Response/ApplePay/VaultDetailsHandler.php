@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -30,8 +30,10 @@ class VaultDetailsHandler extends Handler implements HandlerInterface
      * @throws NoSuchEntityException
      * @throws Exception
      */
-    public function handle(array $handlingSubject, array $response): void
-    {
+    public function handle(
+        array $handlingSubject,
+        array $response
+    ): void {
         $paymentDO = $this->subjectReader->readPayment($handlingSubject);
         $transaction = $this->subjectReader->readTransaction($response);
         $payment = $paymentDO->getPayment();
@@ -67,13 +69,17 @@ class VaultDetailsHandler extends Handler implements HandlerInterface
         $paymentToken->setGatewayToken($token);
         $paymentToken->setExpiresAt($this->getExpirationDate($transaction));
 
+        $expirationMonth = $transaction->applePayCardDetails->expirationMonth;
+        $expirationYear = $transaction->applePayCardDetails->expirationYear;
+
         $paymentToken->setTokenDetails($this->convertDetailsToJSON([
             // Card Type has a prefix, eg `Apple Pay - MasterCard`, so needs removing.
+            'customerId' => $transaction->customerDetails->id,
             'type' => $this->getCreditCardType(
                 str_replace('Apple Pay - ', '', $transaction->applePayCardDetails->cardType)
             ),
             'maskedCC' => $transaction->applePayCardDetails->last4,
-            'expirationDate' => $transaction->applePayCardDetails->expirationMonth . '/' . $transaction->applePayCardDetails->expirationYear
+            'expirationDate' => $expirationMonth . '/' . $expirationYear
         ]));
 
         return $paymentToken;

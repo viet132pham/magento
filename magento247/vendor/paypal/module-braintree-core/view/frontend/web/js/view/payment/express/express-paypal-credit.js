@@ -2,12 +2,11 @@
  * Express Paypal Credit button component
  */
 define([
-    'jquery',
     'underscore',
     'uiComponent',
     'mage/url',
     'domReady!'
-], function ($, _, Component, url) {
+], function (_, Component, url) {
     'use strict';
 
     const config = _.get(window.checkoutConfig.payment, 'braintree_paypal_credit', {});
@@ -22,7 +21,12 @@ define([
             buttonLabel: _.get(config, ['style', 'label'], null),
             buttonColor: _.get(config, ['style', 'color'], null),
             buttonShape: _.get(config, ['style', 'shape'], null),
-            actionSuccess: url.build('braintree/paypal/review/')
+            skipOrderReviewStep: _.get(config, 'skipOrderReviewStep', true),
+            actionSuccess: _.get(config, 'skipOrderReviewStep', true)
+                ? url.build('checkout/onepage/success')
+                : url.build('braintree/paypal/review'),
+            storeCode: window.checkoutConfig.storeCode,
+            quoteId: window.checkoutConfig.quoteData.entity_id
         },
 
         /**
@@ -52,6 +56,15 @@ define([
          */
         getIsRequiredBillingAddress: function () {
             return _.get(config, 'isRequiredBillingAddress', '0') === '0' ? '' : 'true';
+        },
+
+        /**
+         * Is Customer LoggedIn.
+         *
+         * @return {string}
+         */
+        getIsCustomerLoggedIn: function () {
+            return _.get(window.checkoutConfig, 'isCustomerLoggedIn', false) === false ? '' : true;
         },
 
         /**

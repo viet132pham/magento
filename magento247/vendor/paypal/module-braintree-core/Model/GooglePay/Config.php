@@ -1,12 +1,14 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Model\GooglePay;
 
 use PayPal\Braintree\Gateway\Config\Config as BraintreeConfig;
 use PayPal\Braintree\Model\Adminhtml\Source\GooglePayBtnColor;
+use PayPal\Braintree\Gateway\Config\PayPal\Config as GooglePayConfig;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -20,24 +22,32 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     /**
      * @var BraintreeConfig
      */
-    protected BraintreeConfig $braintreeConfig;
+    private BraintreeConfig $braintreeConfig;
+
+    /**
+     * @var GooglePayConfig
+     */
+    private GooglePayConfig $googlePayConfig;
 
     /**
      * Config constructor.
      *
      * @param ScopeConfigInterface $scopeConfig
      * @param BraintreeConfig $braintreeConfig
+     * @param GooglePayConfig $googlePayConfig
      * @param string|null $methodCode
      * @param string $pathPattern
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         BraintreeConfig $braintreeConfig,
-        string $methodCode = null,
+        GooglePayConfig $googlePayConfig,
+        ?string $methodCode = null,
         string $pathPattern = self::DEFAULT_PATH_PATTERN
     ) {
         parent::__construct($scopeConfig, $methodCode, $pathPattern);
         $this->braintreeConfig = $braintreeConfig;
+        $this->googlePayConfig = $googlePayConfig;
     }
 
     /**
@@ -101,5 +111,15 @@ class Config extends \Magento\Payment\Gateway\Config\Config
         }
 
         return 'PRODUCTION';
+    }
+
+    /**
+     * Can skip order review step
+     *
+     * @return bool
+     */
+    public function skipOrderReviewStep(): bool
+    {
+        return $this->googlePayConfig->skipOrderReviewStep();
     }
 }

@@ -29,7 +29,12 @@ $config = [
         'amount' => $block->getAmount(),
         'cardTypes' => $block->getAvailableCardTypes(),
         'btnColor' => $block->getBtnColor(),
-        'threeDSecure' => $block->get3DSecureConfigData()
+        'threeDSecure' => $block->get3DSecureConfigData(),
+        'storeCode' => $block->getStoreCode(),
+        'quoteId' => $block->getQuoteId(),
+        'skipOrderReviewStep' => $block->skipOrderReviewStep(),
+        'priceIncludesTax' => $block->priceIncludesTax(),
+        'priceFormat' => $block->getPriceFormat()
     ]
 ];
 ?>

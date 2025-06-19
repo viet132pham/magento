@@ -6,13 +6,15 @@ define([
     'Magento_Checkout/js/view/payment/default',
     'Magento_Checkout/js/model/quote',
     'Magento_Vault/js/view/payment/vault-enabler',
-    'PayPal_Braintree/js/applepay/button'
+    'PayPal_Braintree/js/applepay/button',
+    'PayPal_Braintree/js/helper/get-apple-pay-line-items'
 ], function (
     _,
     Component,
     quote,
     VaultEnabler,
-    button
+    button,
+    getApplePayLineItems
 ) {
     'use strict';
 
@@ -102,6 +104,14 @@ define([
         },
 
         /**
+         * Get price includes tax configuration.
+         * @returns bool
+         */
+        getPriceIncludesTax: function () {
+            return window.checkoutConfig.payment[this.getCode()].priceIncludesTax;
+        },
+
+        /**
          * Payment request data
          */
         getPaymentRequest: function () {
@@ -109,7 +119,8 @@ define([
                 total: {
                     label: this.getDisplayName(),
                     amount: this.grandTotalAmount
-                }
+                },
+                lineItems: getApplePayLineItems(quote.totals(), this.getPriceIncludesTax())
             };
         },
 

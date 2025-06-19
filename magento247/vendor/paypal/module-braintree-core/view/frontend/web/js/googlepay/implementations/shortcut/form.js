@@ -1,9 +1,8 @@
 /*browser:true*/
 define([
     'underscore',
-    'jquery',
     'uiComponent'
-], function (_, $, Component) {
+], function (_, Component) {
     'use strict';
 
     return Component.extend({

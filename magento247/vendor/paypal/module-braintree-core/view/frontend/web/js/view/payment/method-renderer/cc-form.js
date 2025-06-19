@@ -128,6 +128,16 @@ define(
             },
 
             /**
+             * Store the CC message container so it can be switched if required later on.
+             *
+             * @returns {Object}
+             */
+            initialize: function () {
+                this._super();
+                this.ccMessageContainer = this.messageContainer;
+            },
+
+            /**
              * Get payment name
              *
              * @returns {String}
@@ -284,6 +294,7 @@ define(
 
                 this.setPaymentMethodNonce(payload.nonce);
                 this.setCreditCardBin(payload.details.bin);
+                this.messageContainer = this.ccMessageContainer;
 
                 // place order on success validation
                 self.validatorManager.validate(self, function () {

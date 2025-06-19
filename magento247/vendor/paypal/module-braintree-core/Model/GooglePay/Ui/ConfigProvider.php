@@ -1,30 +1,27 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Model\GooglePay\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\View\Asset\Source;
 use PayPal\Braintree\Gateway\Config\Config as BraintreeConfig;
+use PayPal\Braintree\Gateway\Config\GooglePay\Config as GooglePayConfig;
 use PayPal\Braintree\Gateway\Request\PaymentDataBuilder;
 use PayPal\Braintree\Model\GooglePay\Config;
 use PayPal\Braintree\Model\Adapter\BraintreeAdapter;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Asset\Repository;
+use Magento\Tax\Helper\Data as TaxHelper;
 
 class ConfigProvider implements ConfigProviderInterface
 {
     public const METHOD_CODE = 'braintree_googlepay';
     public const METHOD_VAULT_CODE = 'braintree_googlepay_vault';
-
-    /**
-     * @var Source
-     */
-    private Source $assetSource;
 
     /**
      * @var Config
@@ -47,6 +44,11 @@ class ConfigProvider implements ConfigProviderInterface
     private BraintreeConfig $braintreeConfig;
 
     /**
+     * @var GooglePayConfig
+     */
+    protected GooglePayConfig $googlePayConfig;
+
+    /**
      * @var string
      */
     private string $clientToken = '';
@@ -54,34 +56,42 @@ class ConfigProvider implements ConfigProviderInterface
     /**
      * @var string
      */
-    private string $fileId = 'PayPal_Braintree::images/GooglePay_AcceptanceMark_WhiteShape_RGB_60x36pt@4x.png';
+    private string $fileId = 'PayPal_Braintree::images/GooglePay_AcceptanceMark.png';
+
+    /**
+     * @var TaxHelper
+     */
+    private TaxHelper $taxHelper;
 
     /**
      * @var array
      */
-    private array $icons = [];
+    private array $icon = [];
 
     /**
      * ConfigProvider constructor.
      *
-     * @param Source $assetSource
      * @param Config $config
      * @param BraintreeAdapter $adapter
      * @param Repository $assetRepo
      * @param BraintreeConfig $braintreeConfig
+     * @param GooglePayConfig $googlePayConfig
+     * @param TaxHelper $taxHelper
      */
     public function __construct(
-        Source $assetSource,
         Config $config,
         BraintreeAdapter $adapter,
         Repository $assetRepo,
-        BraintreeConfig $braintreeConfig
+        BraintreeConfig $braintreeConfig,
+        GooglePayConfig $googlePayConfig,
+        TaxHelper $taxHelper
     ) {
-        $this->assetSource = $assetSource;
         $this->config = $config;
         $this->adapter = $adapter;
         $this->assetRepo = $assetRepo;
         $this->braintreeConfig = $braintreeConfig;
+        $this->googlePayConfig = $googlePayConfig;
+        $this->taxHelper = $taxHelper;
     }
 
     /**
@@ -105,7 +115,8 @@ class ConfigProvider implements ConfigProviderInterface
                     'btnColor' => $this->getBtnColor(),
                     'paymentMarkSrc' => $this->getPaymentMarkSrc(),
                     'vaultCode' => self::METHOD_VAULT_CODE,
-                    'icons' => $this->getIcons()
+                    'skipOrderReviewStep' => $this->skipOrderReviewStep(),
+                    'priceIncludesTax' => $this->taxHelper->priceIncludesTax(),
                 ]
             ]
         ];
@@ -192,45 +203,34 @@ class ConfigProvider implements ConfigProviderInterface
      * @return array
      * @throws LocalizedException
      */
-    public function getIcons(): array
+    public function getIcon(): array
     {
-        if (!empty($this->icons)) {
-            return $this->icons;
+        if (!empty($this->icon)) {
+            return $this->icon;
         }
 
-        $availableIcons = [
-            'ae' => 'Google Pay - American Express',
-            'di' => 'Google Pay - Discover',
-            'mc' => 'Google Pay - MasterCard',
-            'vi' => 'Google Pay - Visa',
-            'googlepaymark' => 'Google Pay'
+        $asset = $this->assetRepo->createAsset(
+            $this->fileId,
+            ['_secure' => true]
+        );
+
+        $this->icon = [
+            'url' => $asset->getUrl(),
+            'width' => 47,
+            'height' => 25,
+            'title' => __('Google Pay'),
         ];
 
-        foreach ($availableIcons as $code => $label) {
-            if (array_key_exists($code, $this->icons)) {
-                continue;
-            }
+        return $this->icon;
+    }
 
-            $asset = $this->assetRepo->createAsset(
-                $code === 'googlepaymark'
-                    ? $this->fileId
-                    : 'PayPal_Braintree::images/googlepay/' . strtolower($code) . '.png',
-                ['_secure' => true]
-            );
-            $placeholder = $this->assetSource->findSource($asset);
-
-            if (!$placeholder) {
-                continue;
-            }
-
-            $this->icons[$code] = [
-                'url' => $asset->getUrl(),
-                'width' => 46,
-                'height' => 30,
-                'title' => __($label),
-            ];
-        }
-
-        return $this->icons;
+    /**
+     * Can skip order review step
+     *
+     * @return bool
+     */
+    public function skipOrderReviewStep(): bool
+    {
+        return (bool) $this->googlePayConfig->skipOrderReviewStep();
     }
 }

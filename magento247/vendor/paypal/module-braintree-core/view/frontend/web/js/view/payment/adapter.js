@@ -22,6 +22,7 @@ define([
         clientInstance: null,
         hostedFieldsInstance: null,
         paypalInstance: null,
+        googlePaymentInstance: null,
         code: 'braintree',
 
         /**
@@ -107,6 +108,38 @@ define([
         },
 
         /**
+         * Get Message
+         *
+         * @param paypalType
+         * @param amount
+         * @param pageType
+         * @returns {{amount, color: (string|*), align: *}|null}
+         */
+        getMessage: function (paypalType = null, amount, pageType) {
+            if (pageType === 'checkout') {
+                if (!window.checkoutConfig?.payment?.[this.getCurrentCode(paypalType)]) {
+                    return null;
+                }
+
+                const messageActive = window.checkoutConfig.payment[this.getCurrentCode(paypalType)].isMessageActive,
+                    messageStyles = window.checkoutConfig.payment[this.getCurrentCode(paypalType)].messageStyles;
+
+                if (!messageActive || !messageStyles) {
+                    return null;
+                }
+
+                return {
+                    align: messageStyles.text_align,
+                    amount,
+                    // Button doesn't support monochrome or greyscale so in either of these cases return black.
+                    color: messageStyles.text_color !== 'black' && messageStyles.text_color !== 'white' ? 'black' : messageStyles.text_color
+                };
+            } else {
+                return null;
+            }
+        },
+
+        /**
          * @returns {String}
          */
         getBranding: function () {
@@ -170,6 +203,21 @@ define([
 
         setPayPalInstance: function (val) {
             this.config.paypalInstance = val;
+        },
+
+        /**
+         * Has Google Pay been init'd already
+         */
+        getGooglePayInstance: function () {
+            if (typeof this.googlePaymentInstance !== 'undefined' && this.googlePaymentInstance) {
+                return this.googlePaymentInstance;
+            }
+
+            return null;
+        },
+
+        setGooglePayInstance: function (val) {
+            this.googlePaymentInstance = val;
         },
 
         /**

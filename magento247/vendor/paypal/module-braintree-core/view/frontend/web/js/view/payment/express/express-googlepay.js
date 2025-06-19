@@ -24,12 +24,17 @@ define([
             clientToken: _.get(config, 'clientToken', null),
             merchantId: _.get(config, 'merchantId', null),
             currencyCode: window.checkoutConfig.quoteData.base_currency_code,
-            actionSuccess: url.build('braintree/googlepay/review/'),
+            skipOrderReviewStep: _.get(config, 'skipOrderReviewStep', true),
+            actionSuccess: _.get(config, 'skipOrderReviewStep', true)
+                ? url.build('checkout/onepage/success')
+                : url.build('braintree/googlepay/review'),
             amount: window.checkoutConfig.quoteData.base_grand_total,
             environment: _.get(config, 'environment', 'TEST'),
             cardTypes: _.get(config, 'cardTypes', []),
             btnColor: _.get(config, 'btnColor', ''),
-            threeDSecure: null
+            threeDSecure: null,
+            storeCode: window.checkoutConfig.storeCode,
+            quoteId: window.checkoutConfig.quoteData.entity_id
         },
 
         /**
@@ -73,8 +78,8 @@ define([
             }
 
             return {
-                'enabled': true,
-                'challengeRequested': secureConfig.challengeRequested ,
+                'enabled': secureConfig.enabled,
+                'challengeRequested': secureConfig.challengeRequested,
                 'thresholdAmount': secureConfig.thresholdAmount,
                 'specificCountries': secureConfig.specificCountries,
                 'ipAddress': secureConfig.ipAddress
@@ -95,6 +100,7 @@ define([
             this.threeDSecure.clientToken = this.clientToken;
             this.threeDSecure.environment = this.environment;
 
+            const element = $(`#${this.id}`);
             let api = new buttonApi();
 
             api.setEnvironment(this.environment);
@@ -106,10 +112,14 @@ define([
             api.setCardTypes(this.cardTypes);
             api.setBtnColor(this.btnColor);
             api.setThreeDSecureValidatorConfig(this.threeDSecure);
+            api.setStoreCode(this.storeCode);
+            api.setQuoteId(this.quoteId);
+            api.setSkipReview(this.skipOrderReviewStep);
+            api.setElement(element);
 
             // Attach the button
             button.init(
-                document.getElementById(this.id),
+                element,
                 api
             );
         },

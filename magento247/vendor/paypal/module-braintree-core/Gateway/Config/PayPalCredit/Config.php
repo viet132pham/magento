@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -43,7 +43,7 @@ class Config implements ConfigInterface
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        string $methodCode = null,
+        ?string $methodCode = null,
         string $pathPattern = self::DEFAULT_PATH_PATTERN
     ) {
         $this->scopeConfig = $scopeConfig;
@@ -98,49 +98,62 @@ class Config implements ConfigInterface
      * Get configuration field value
      *
      * @param string $field
+     * @param int|null $storeId
      * @return mixed
      */
-    public function getConfigValue(string $field): mixed
+    public function getConfigValue(string $field, ?int $storeId = null): mixed
     {
         return $this->scopeConfig->getValue(
             $field,
-            ScopeInterface::SCOPE_STORE
+            ScopeInterface::SCOPE_STORE,
+            $storeId
         );
     }
 
     /**
      * Get Payment configuration status
      *
+     * @param int|null $storeId
      * @return bool
      */
-    public function isActive(): bool
+    public function isActive(?int $storeId = null): bool
     {
-        $paypalActive = $this->getConfigValue("payment/braintree_paypal/active");
-        $paypalCreditActive = $this->getConfigValue("payment/braintree_paypal_credit/active");
-        $paypalCreditShow =
-            $this->getConfigValue("payment/braintree_paypal/button_location_checkout_type_credit_show");
+        $paypalActive = $this->getConfigValue(
+            'payment/braintree_paypal/active',
+            $storeId
+        );
+        $paypalCreditActive = $this->getConfigValue(
+            'payment/braintree_paypal_credit/active',
+            $storeId
+        );
 
         // If PayPal or PayPal Credit is disabled in the admin
-        if (!$paypalActive || !$paypalCreditActive || !$paypalCreditShow) {
+        if (!$paypalActive || !$paypalCreditActive) {
             return false;
         }
 
         // Only allowed on US and UK
-        if (!$this->isUk() && !$this->isUS()) {
+        if (!$this->isUk($storeId) && !$this->isUS($storeId)) {
             return false;
         }
 
         // Validate configuration if UK
-        if ($this->isUk()) {
-            if ($this->isSandbox()) {
-                $merchantId = substr($this->getConfigValue('payment/braintree/sandbox_merchant_id'), -4);
+        if ($this->isUk($storeId)) {
+            if ($this->isSandbox($storeId)) {
+                $merchantId = substr(
+                    $this->getConfigValue('payment/braintree/sandbox_merchant_id', $storeId),
+                    -4
+                );
             } else {
-                $merchantId = substr($this->getConfigValue('payment/braintree/merchant_id'), -4);
+                $merchantId = substr(
+                    $this->getConfigValue('payment/braintree/merchant_id', $storeId),
+                    -4
+                );
             }
-            return $merchantId === $this->getActivationCode() && $this->getMerchantName();
+            return $merchantId === $this->getActivationCode($storeId) && $this->getMerchantName($storeId);
         }
 
-        return (bool) $this->getValue(self::KEY_ACTIVE);
+        return (bool) $this->getValue(self::KEY_ACTIVE, $storeId);
     }
 
     /**
@@ -156,31 +169,34 @@ class Config implements ConfigInterface
     /**
      * UK Merchant Name
      *
+     * @param int|null $storeId
      * @return string|null
      */
-    public function getMerchantName(): ?string
+    public function getMerchantName(?int $storeId = null): ?string
     {
-        return $this->getValue(self::KEY_UK_MERCHANT_NAME);
+        return $this->getValue(self::KEY_UK_MERCHANT_NAME, $storeId);
     }
 
     /**
      * UK Activation Code
      *
+     * @param int|null $storeId
      * @return string|null
      */
-    public function getActivationCode(): ?string
+    public function getActivationCode(?int $storeId = null): ?string
     {
-        return $this->getValue(self::KEY_UK_ACTIVATION_CODE);
+        return $this->getValue(self::KEY_UK_ACTIVATION_CODE, $storeId);
     }
 
     /**
      * PayPal Sandbox mode
      *
+     * @param int|null $storeId
      * @return bool
      */
-    public function isSandbox(): bool
+    public function isSandbox(?int $storeId = null): bool
     {
-        return self::KEY_SANDBOX === $this->getConfigValue('payment/braintree/environment');
+        return self::KEY_SANDBOX === $this->getConfigValue('payment/braintree/environment', $storeId);
     }
 
     /**
@@ -206,30 +222,33 @@ class Config implements ConfigInterface
     /**
      * Merchant Country set to GB/UK
      *
+     * @param int|null $storeId
      * @return bool
      */
-    public function isUk(): bool
+    public function isUk(?int $storeId = null): bool
     {
-        return 'GB' === $this->getMerchantCountry();
+        return 'GB' === $this->getMerchantCountry($storeId);
     }
 
     /**
      * Merchant Country set to US
      *
+     * @param int|null $storeId
      * @return bool
      */
-    public function isUS(): bool
+    public function isUS(?int $storeId = null): bool
     {
-        return 'US' === $this->getMerchantCountry();
+        return 'US' === $this->getMerchantCountry($storeId);
     }
 
     /**
      * Merchant Country
      *
+     * @param int|null $storeId
      * @return string|null
      */
-    public function getMerchantCountry(): ?string
+    public function getMerchantCountry(?int $storeId = null): ?string
     {
-        return $this->getConfigValue('paypal/general/merchant_country');
+        return $this->getConfigValue('paypal/general/merchant_country', $storeId);
     }
 }

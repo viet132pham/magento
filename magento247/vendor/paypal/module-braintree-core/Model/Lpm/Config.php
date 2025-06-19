@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -31,30 +31,33 @@ class Config extends \Magento\Payment\Gateway\Config\Config
 
     public const VALUE_BANCONTACT = 'bancontact';
     public const VALUE_EPS = 'eps';
-    public const VALUE_GIROPAY = 'giropay';
     public const VALUE_IDEAL = 'ideal';
-    public const VALUE_SOFORT = 'sofort';
     public const VALUE_MYBANK = 'mybank';
     public const VALUE_P24 = 'p24';
     public const VALUE_SEPA = 'sepa';
 
     public const LABEL_BANCONTACT = 'Bancontact';
     public const LABEL_EPS = 'EPS';
-    public const LABEL_GIROPAY = 'giropay';
     public const LABEL_IDEAL = 'iDEAL';
-    public const LABEL_SOFORT = 'Klarna Pay Now / SOFORT';
     public const LABEL_MYBANK = 'MyBank';
     public const LABEL_P24 = 'P24';
     public const LABEL_SEPA = 'SEPA/ELV Direct Debit';
 
     private const COUNTRIES_BANCONTACT = 'BE';
     private const COUNTRIES_EPS = 'AT';
-    private const COUNTRIES_GIROPAY = 'DE';
     private const COUNTRIES_IDEAL = 'NL';
-    private const COUNTRIES_SOFORT = ['AT', 'BE', 'DE', 'ES', 'IT', 'NL', 'GB'];
     private const COUNTRIES_MYBANK = 'IT';
     private const COUNTRIES_P24 = 'PL';
     private const COUNTRIES_SEPA = ['AT', 'DE'];
+
+    /**
+     * @var array
+     */
+    private array $removedLPMs = [
+        'sofort',
+        'giropay',
+        'sepa'
+    ];
 
     /**
      * @var StoreConfigResolver
@@ -108,7 +111,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
         Repository $assetRepo,
         UrlInterface $urlBuilder,
         ScopeConfigInterface $scopeConfig,
-        string $methodCode = null,
+        ?string $methodCode = null,
         string $pathPattern = \Magento\Payment\Gateway\Config\Config::DEFAULT_PATH_PATTERN
     ) {
         parent::__construct($scopeConfig, $methodCode, $pathPattern);
@@ -156,11 +159,13 @@ class Config extends \Magento\Payment\Gateway\Config\Config
         );
 
         foreach ($allowedMethods as $allowedMethod) {
-            $this->allowedMethods[] = [
-                'method' => $allowedMethod,
-                'label' => constant('self::LABEL_' . strtoupper($allowedMethod)),
-                'countries' => constant('self::COUNTRIES_' . strtoupper($allowedMethod))
-            ];
+            if (!in_array($allowedMethod, $this->removedLPMs)) {
+                $this->allowedMethods[] = [
+                    'method' => $allowedMethod,
+                    'label' => constant('self::LABEL_' . strtoupper($allowedMethod)),
+                    'countries' => constant('self::COUNTRIES_' . strtoupper($allowedMethod))
+                ];
+            }
         }
 
         return $this->allowedMethods;
@@ -213,12 +218,8 @@ class Config extends \Magento\Payment\Gateway\Config\Config
                 ->getUrl('PayPal_Braintree::images/' . self::VALUE_BANCONTACT . '.svg'),
             self::VALUE_EPS => $this->assetRepo
                 ->getUrl('PayPal_Braintree::images/' . self::VALUE_EPS . '.svg'),
-            self::VALUE_GIROPAY => $this->assetRepo
-                ->getUrl('PayPal_Braintree::images/' . self::VALUE_GIROPAY . '.svg'),
             self::VALUE_IDEAL => $this->assetRepo
                 ->getUrl('PayPal_Braintree::images/' . self::VALUE_IDEAL . '.svg'),
-            self::VALUE_SOFORT => $this->assetRepo
-                ->getUrl('PayPal_Braintree::images/' . self::VALUE_SOFORT . '.svg'),
             self::VALUE_MYBANK => $this->assetRepo
                 ->getUrl('PayPal_Braintree::images/' . self::VALUE_MYBANK . '.svg'),
             self::VALUE_P24 => $this->assetRepo

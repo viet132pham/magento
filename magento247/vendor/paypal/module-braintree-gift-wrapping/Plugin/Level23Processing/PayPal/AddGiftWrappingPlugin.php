@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -12,7 +12,7 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use PayPal\Braintree\Gateway\Config\PayPal\Config as PayPalConfig;
 use PayPal\Braintree\Gateway\Data\Order\OrderAdapter;
 use PayPal\Braintree\Gateway\Helper\SubjectReader;
-use PayPal\Braintree\Gateway\Request\Level23ProcessingDataBuilder;
+use PayPal\Braintree\Gateway\Request\PayPal\Level23ProcessingDataBuilder;
 
 class AddGiftWrappingPlugin
 {
@@ -49,8 +49,11 @@ class AddGiftWrappingPlugin
      * @return array
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    public function afterBuild(Level23ProcessingDataBuilder $subject, array $result, array $buildSubject): array
-    {
+    public function afterBuild(
+        Level23ProcessingDataBuilder $subject,
+        array $result,
+        array $buildSubject
+    ): array {
         $paymentDO = $this->subjectReader->readPayment($buildSubject);
 
         /** @var OrderPaymentInterface $payment */

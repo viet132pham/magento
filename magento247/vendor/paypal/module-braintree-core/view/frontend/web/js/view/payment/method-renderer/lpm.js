@@ -274,7 +274,7 @@ define(
              */
             isValidCountryAndCurrency: function (method) {
                 let address = quote.billingAddress(),
-                    countryId = address.countryId,
+                    countryId = address?.countryId,
                     quoteCurrency = quote.totals()['base_currency_code'],
                     paymentMethodDetails = this.getPaymentMethod(method);
 

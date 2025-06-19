@@ -93,20 +93,6 @@ define([
         },
 
         /**
-         * Get the ApplePay Card icons.
-         *
-         * @param type
-         * @return {*|boolean}
-         */
-        getApplePayIcons(type) {
-            let lowerCasedType = type.toLowerCase();
-
-            return window.checkoutConfig.payment.braintree_applepay.icons.hasOwnProperty(lowerCasedType) ?
-                window.checkoutConfig.payment.braintree_applepay.icons[lowerCasedType]
-                : false;
-        },
-
-        /**
          * trigger Place order action.
          *
          * Set payment method nonce & place order.
@@ -154,6 +140,13 @@ define([
             data['additional_data'] = _.extend(data['additional_data'], this.additionalData);
 
             return data;
+        },
+
+        /**
+         * Return image url for the apple pay mark
+         */
+        getPaymentMarkSrc: function () {
+            return window.checkoutConfig.payment['braintree_applepay'].paymentMarkSrc;
         }
     });
 });

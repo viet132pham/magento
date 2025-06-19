@@ -60,10 +60,10 @@ define([
             let lineError = null;
 
             if (billingAddress.street[0].length > 50 ||
-                (shippingAddress.street !== undefined && shippingAddress.street[0].length > 50)) {
+                shippingAddress.street !== undefined && shippingAddress.street[0].length > 50) {
                 lineError = 'line1';
             } else if (billingAddress.street[1].length > 50 ||
-                (shippingAddress.street !== undefined && shippingAddress.street[1].length > 50)) {
+                shippingAddress.street !== undefined && shippingAddress.street[1].length > 50) {
                 lineError = 'line2';
             }
 
@@ -83,7 +83,10 @@ define([
             let self = this,
                 clientInstance = braintree.getApiClient(),
                 state = $.Deferred(),
-                totalAmount = parseFloat(quote.totals()['base_grand_total']).toFixed(2),
+                baseGrandTotal = parseFloat(window.checkoutConfig.quoteData?.is_multi_shipping)
+                    ? window.checkoutConfig.quoteData.base_grand_total
+                    : quote.totals()['base_grand_total'],
+                totalAmount = parseFloat(baseGrandTotal).toFixed(2),
                 billingAddress = quote.billingAddress(),
                 shippingAddress = quote.shippingAddress(),
                 setup3d;
@@ -209,7 +212,7 @@ define([
                                 ? removeNonDigitCharacters(shippingAddress.telephone)
                                 : shippingAddress.telephone,
                             ipAddress: threeDSecureParameters.additionalInformation.ipAddress
-                        }
+                        };
                     }
 
                     threeDSecureInstance.verifyCard(threeDSecureParameters, function (err, response) {

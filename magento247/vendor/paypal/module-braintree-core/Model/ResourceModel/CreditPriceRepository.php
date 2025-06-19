@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -42,7 +42,7 @@ class CreditPriceRepository implements CreditPriceRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function getByProductId($productId)
+    public function getByProductId(int $productId): array
     {
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('product_id', $productId);
@@ -53,7 +53,7 @@ class CreditPriceRepository implements CreditPriceRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function getCheapestByProductId($productId): CreditPriceDataInterface|DataObject
+    public function getCheapestByProductId(int $productId): CreditPriceDataInterface|DataObject
     {
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('product_id', $productId);
@@ -66,7 +66,7 @@ class CreditPriceRepository implements CreditPriceRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function deleteByProductId($productId)
+    public function deleteByProductId(int $productId): array
     {
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('product_id', $productId);

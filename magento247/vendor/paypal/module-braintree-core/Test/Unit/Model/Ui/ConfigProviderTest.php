@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Test\Unit\Model\Ui;
 
 use PayPal\Braintree\Gateway\Config\Config;
@@ -128,7 +129,7 @@ class ConfigProviderTest extends TestCase
     /**
      * @return array
      */
-    public function getConfigDataProvider()
+    public static function getConfigDataProvider(): array
     {
         return [
             [
@@ -143,7 +144,7 @@ class ConfigProviderTest extends TestCase
                     'isCvvEnabled' => true,
                     'isVerify3DSecure' => true,
                     'is3DSAlwaysRequested' => true,
-                    'getThresholdAmount' => (float)20,
+                    'getThresholdAmount' => 20.0,
                     'get3DSecureSpecificCountries' => ['GB', 'US', 'CA'],
                     'getEnvironment' => 'test-environment',
                     'getMerchantId' => 'test-merchant-id',
@@ -193,7 +194,7 @@ class ConfigProviderTest extends TestCase
     /**
      * @return array
      */
-    public function getClientTokenDataProvider()
+    public static function getClientTokenDataProvider(): array
     {
         return [
             [

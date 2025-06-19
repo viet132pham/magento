@@ -25,27 +25,22 @@ try {
     $paypalPayLaterId = sprintf('paylater-%s', $block->getContainerId());
     $paypalPayLaterMessagingId = sprintf('paylater-%s-message', $block->getContainerId());
 }
-
 ?>
-<?php
-if ($block->getAmount() > 0) :
-    $jsonButtonConfig = json_encode($block->getButtonConfig());
-    $jsonCartLines = json_encode($block->getCartLineItems());
-    $scriptString = <<<SCRIPT
-        require([
-            'PayPal_Braintree/js/paypal/button',
-            'jquery'
-        ], function (button, $) {
-            $(function () {
-                button.init(
-                    $jsonButtonConfig,
-                    '$jsonButtonConfig'
-                );
-            })
-        })
-SCRIPT;
-    echo $secureRenderer->renderTag('script', [], $scriptString, false);
-?>
+<?php if ($block->getAmount() > 0): ?>
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "PayPal_Braintree/js/paypal/product-page": {
+                    "buttonConfig": <?= /* @noEscape */ json_encode($block->getButtonConfig()) ?>,
+                    "buttonIds": [
+                        "#<?= /* @noEscape */ $paypalId ?>",
+                        "#<?= /* @noEscape */ $paypalCreditId ?>",
+                        "#<?= /* @noEscape */ $paypalPayLaterId ?>"
+                    ]
+                }
+            }
+        }
+    </script>
     <?php if ($block->showPayPalButton('paypal', 'productpage')):?>
         <div class="paypal product-page paypal-logo braintree-paypal-logo <?= $escaper->escapeHtmlAttr($block->getContainerId()) ?>-container">
             <div data-currency="<?= $escaper->escapeHtmlAttr($block->getCurrency()) ?>"
@@ -61,6 +56,8 @@ SCRIPT;
                  data-shape="<?= $block->getButtonShape('paypal') ?>"
                  data-location="<?= $block->getLocation() ?>"
                  data-requiredbillingaddress="<?= $block->isRequiredBillingAddress() ?>"
+                 data-storecode="<?= $block->getStoreCode() ?>"
+                 data-skiporderreviewstep="<?= $block->skipOrderReviewStep() ?>"
                  class="action-braintree-paypal-logo product-page-action"></div>
         </div>
     <?php endif;?>
@@ -79,6 +76,8 @@ SCRIPT;
                  data-shape="<?= $block->getButtonShape('credit') ?>"
                  data-location="<?= $block->getLocation() ?>"
                  data-requiredbillingaddress="<?= $block->isRequiredBillingAddress() ?>"
+                 data-storecode="<?= $block->getStoreCode() ?>"
+                 data-skiporderreviewstep="<?= $block->skipOrderReviewStep() ?>"
                  class="action-braintree-paypal-logo product-page-action"></div>
         </div>
     <?php endif; ?>
@@ -97,20 +96,9 @@ SCRIPT;
                  data-shape="<?= $block->getButtonShape('paylater') ?>"
                  data-location="<?= $block->getLocation() ?>"
                  data-requiredbillingaddress="<?= $block->isRequiredBillingAddress() ?>"
+                 data-storecode="<?= $block->getStoreCode() ?>"
+                 data-skiporderreviewstep="<?= $block->skipOrderReviewStep() ?>"
                  class="action-braintree-paypal-logo product-page-action"></div>
         </div>
     <?php endif; ?>
-    <?php if ($block->showPayPalButton('messaging', 'productpage')): ?>
-        <div class="action-braintree-paypal-message"
-             id="<?= $escaper->escapeHtmlAttr($paypalPayLaterMessagingId) ?>"
-             data-pp-amount="<?= $escaper->escapeHtmlAttr($block->getAmount()) ?>"
-             data-pp-type="product"
-             data-currency-symbol="<?= $block->getCurrencySymbol(); ?>"
-             data-messaging-layout="<?= $block->getMessagingLayout('messaging') ?>"
-             data-messaging-logo="<?= $block->getMessagingLogo('messaging') ?>"
-             data-messaging-logo-position="<?= $block->getMessagingLogoPosition('messaging') ?>"
-             data-messaging-text-color="<?= $block->getMessagingTextColor('messaging') ?>"
-        ></div>
-    <?php endif; ?>
 <?php endif; ?>
-

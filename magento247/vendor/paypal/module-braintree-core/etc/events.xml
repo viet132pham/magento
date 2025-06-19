@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -41,5 +41,13 @@
     </event>
     <event name="sales_order_save_after">
         <observer name="braintree_sales_order_save_after" instance="PayPal\Braintree\Observer\SalesOrderSaveObserver" />
+    </event>
+    <event name="sales_order_shipment_track_save_before">
+        <observer name="PayPal_Braintree::set_data_for_package_tracking"
+                  instance="PayPal\Braintree\Observer\SetDataForPackageTracking"/>
+    </event>
+    <event name="sales_order_shipment_track_save_after">
+        <observer name="PayPal_Braintree::send_package_tracking"
+                  instance="PayPal\Braintree\Observer\SendPackageTracking"/>
     </event>
 </config>

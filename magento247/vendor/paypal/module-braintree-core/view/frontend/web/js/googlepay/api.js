@@ -6,24 +6,48 @@ define([
     'underscore',
     'jquery',
     'mage/translate',
-    'mage/storage',
+    'Magento_Customer/js/customer-data',
+    'Magento_Catalog/js/price-utils',
+    'PayPal_Braintree/js/actions/create-payment',
+    'PayPal_Braintree/js/actions/get-shipping-methods',
+    'PayPal_Braintree/js/actions/set-shipping-information',
+    'PayPal_Braintree/js/actions/update-totals',
     'PayPal_Braintree/js/form-builder',
     'PayPal_Braintree/js/googlepay/implementations/shortcut/3d-secure',
     'PayPal_Braintree/js/googlepay/model/parsed-response',
     'PayPal_Braintree/js/googlepay/model/payment-data',
+    'PayPal_Braintree/js/helper/addresses/map-googlepay-payment-information',
+    'PayPal_Braintree/js/helper/addresses/map-googlepay-shipping-information',
+    'PayPal_Braintree/js/helper/get-google-pay-line-items',
+    'PayPal_Braintree/js/helper/is-cart-virtual',
     'PayPal_Braintree/js/helper/remove-non-digit-characters',
+    'PayPal_Braintree/js/helper/submit-review-page',
+    'PayPal_Braintree/js/model/region-data',
+    'PayPal_Braintree/js/view/payment/adapter',
     'PayPal_Braintree/js/view/payment/validator-manager'
 ], function (
     Component,
     _,
     $,
     $t,
-    storage,
+    customerData,
+    priceUtils,
+    createPayment,
+    getShippingMethods,
+    setShippingInformation,
+    updateTotals,
     formBuilder,
     threeDSecureValidator,
     parsedResponseModel,
     paymentDataModel,
+    mapGooglePayPaymentInformation,
+    mapGooglePayShippingInformation,
+    getGooglePayLineItems,
+    isCartVirtual,
     removeNonDigitCharacters,
+    submitReviewPage,
+    regionDataModel,
+    braintreeMainAdapter,
     validatorManager
 ) {
     'use strict';
@@ -38,10 +62,14 @@ define([
             actionSuccess: null,
             amount: null,
             cardTypes: [],
+            shippingMethods: {},
+            shippingMethodCode: null,
             btnColor: 0,
             email: null,
             paymentMethodNonce: null,
-            creditCardBin: null
+            creditCardBin: null,
+            element: null,
+            priceFormat: [],
         },
 
         /**
@@ -126,6 +154,66 @@ define([
         },
 
         /**
+         * Set and get quote id
+         */
+        setQuoteId: function (value) {
+            this.quoteId = value;
+        },
+        getQuoteId: function () {
+            return this.quoteId;
+        },
+
+        /**
+         * Set and get store code
+         */
+        setStoreCode: function (value) {
+            this.storeCode = value;
+        },
+        getStoreCode: function () {
+            return this.storeCode;
+        },
+
+        /**
+         * Set and get success redirection url
+         */
+        setSkipReview: function (value) {
+            this.skipReview = value;
+        },
+        getSkipReview: function () {
+            return this.skipReview;
+        },
+
+        /**
+         * Set and get store code
+         */
+        setPriceIncludesTax: function (value) {
+            this.priceIncludesTax = value;
+        },
+        getPriceIncludesTax: function () {
+            return this.priceIncludesTax;
+        },
+
+        /**
+         * Set and get the current element
+         */
+        setElement: function (value) {
+            this.element = value;
+        },
+        getElement: function () {
+            return this.element;
+        },
+
+        /**
+         * Set and get the current element
+         */
+        setPriceFormat: function (value) {
+            this.priceFormat = value;
+        },
+        getPriceFormat: function () {
+            return this.priceFormat;
+        },
+
+        /**
          * Add the 3D Secure validator config.
          *
          * @param {object} value
@@ -150,11 +238,25 @@ define([
          * Payment request info
          */
         getPaymentRequest: function () {
+            const displayShippingOptions = !isCartVirtual() && this.getSkipReview();
+            const callbackIntents = ['PAYMENT_AUTHORIZATION'];
+
+            if (!isCartVirtual()) {
+                callbackIntents.push('SHIPPING_ADDRESS');
+            }
+
+            if (displayShippingOptions) {
+              callbackIntents.push('SHIPPING_OPTION');
+            }
+
+            const totals = customerData.get('cart')();
             let result = {
                 transactionInfo: {
                     totalPriceStatus: 'ESTIMATED',
                     totalPrice: this.getAmount(),
-                    currencyCode: this.getCurrencyCode()
+                    currencyCode: this.getCurrencyCode(),
+                    displayItems: getGooglePayLineItems(totals, this.getPriceIncludesTax()),
+                    totalPriceLabel: $t('Total'),
                 },
                 allowedPaymentMethods: [
                     {
@@ -170,11 +272,13 @@ define([
 
                     }
                 ],
-                shippingAddressRequired: true,
+                shippingAddressRequired: !isCartVirtual(),
+                shippingOptionRequired: displayShippingOptions,
                 shippingAddressParameters: {
                     phoneNumberRequired: true
                 },
-                emailRequired: true
+                emailRequired: true,
+                callbackIntents,
             };
 
             if (this.getEnvironment() !== 'TEST') {
@@ -184,51 +288,192 @@ define([
             return result;
         },
 
+        onPaymentDataChanged: function (data) {
+            return new Promise((resolve) => {
+                const payload = {
+                    address: {
+                        city: data.shippingAddress.locality,
+                        region: data.shippingAddress.administrativeArea,
+                        country_id: data.shippingAddress.countryCode,
+                        postcode: data.shippingAddress.postalCode,
+                        save_in_address_book: 0
+                    }
+                };
+
+                let shippingMethods = Promise.resolve();
+
+                if (!isCartVirtual()) {
+                    shippingMethods = getShippingMethods(payload, this.getStoreCode(), this.getQuoteId()).then((response) => {
+                        const methods = response.filter(({ available }) => available);
+
+                        // Any error message means we need to exit by resolving with an error state.
+                        if (!methods.length) {
+                            resolve({
+                                error: {
+                                    reason: 'SHIPPING_ADDRESS_UNSERVICEABLE',
+                                    message: $t('There are no shipping methods available for the selected address.'),
+                                    intent: 'SHIPPING_ADDRESS',
+                                },
+                            });
+                            return;
+                        }
+
+                        const shippingMethods = methods.map((shippingMethod) => {
+                            const price = priceUtils.formatPriceLocale(shippingMethod.price_incl_tax, this.getPriceFormat());
+                            const description = shippingMethod.carrier_title
+                                ? `${price} ${shippingMethod.carrier_title}`
+                                : price;
+
+                            this.shippingMethods[shippingMethod.method_code] = shippingMethod;
+
+                            return {
+                                id: shippingMethod.method_code,
+                                label: shippingMethod.method_title,
+                                description,
+                            };
+                        });
+
+                        return { shippingMethods, methods };
+                    });
+                }
+
+                shippingMethods.then(({ shippingMethods, methods }) => {
+                    let selectedShipping;
+
+                    if (!isCartVirtual() && this.getSkipReview()) {
+                        selectedShipping = data.shippingOptionData.id === 'shipping_option_unselected'
+                            ? methods[0]
+                            : methods.find(({ method_code: id }) => id === data.shippingOptionData.id) || methods[0];
+
+                        this.shippingMethodCode = selectedShipping.method_code;
+                    }
+
+                    // Create payload to get totals
+                    let totalsPayload = {
+                        "addressInformation": {
+                            "address": {
+                                "countryId": data.shippingAddress.countryCode,
+                                "region": data.shippingAddress.administrativeArea,
+                                "regionId": regionDataModel.getRegionId(data.shippingAddress.countryCode, data.shippingAddress.administrativeArea),
+                                "postcode": data.shippingAddress.postalCode
+                            },
+                            "shipping_method_code": selectedShipping?.method_code,
+                            "shipping_carrier_code": selectedShipping?.method_code
+                        }
+                    };
+
+                    updateTotals(totalsPayload, this.getStoreCode(), this.getQuoteId())
+                        .then((totals) => {
+                            const paymentDataRequestUpdate = {
+                                newTransactionInfo: {
+                                    currencyCode: totals.base_currency_code,
+                                    displayItems: getGooglePayLineItems(totals, this.getPriceIncludesTax()),
+                                    totalPrice: totals.base_grand_total.toString(),
+                                    totalPriceLabel: $t('Total'),
+                                    totalPriceStatus: 'FINAL'
+                                },
+                            };
+
+                            if (shippingMethods && selectedShipping) {
+                                paymentDataRequestUpdate.newShippingOptionParameters = {
+                                    defaultSelectedOptionId: selectedShipping.method_code,
+                                    shippingOptions: shippingMethods,
+                                };
+                            }
+
+                            resolve(paymentDataRequestUpdate);
+                        });
+                });
+            });
+        },
+
         /**
          * Place the order
          */
-        startPlaceOrder: function (deviceData) {
-            let self = this,
-                payload = {
-                    details: {
-                        shippingAddress: self.getShippingAddressData(),
-                        billingAddress: self.getBillingAddressData()
-                    },
-                    nonce: parsedResponseModel.getNonce(),
-                    isNetworkTokenized: parsedResponseModel.getIsNetworkTokenized(),
-                    deviceData: deviceData
-                };
+        startPlaceOrder: function (paymentData) {
+            // Persist the paymentData (shipping address etc.)
+            return new Promise((resolve) => {
+                paymentDataModel.setPaymentMethodData(_.get(
+                    paymentData,
+                    'paymentMethodData',
+                    null
+                ));
+                paymentDataModel.setEmail(_.get(paymentData, 'email', ''));
+                paymentDataModel.setShippingAddress(_.get(
+                    paymentData,
+                    'shippingAddress',
+                    null
+                ));
 
-            self.email = paymentDataModel.getEmail();
-            self.paymentMethodNonce = parsedResponseModel.getNonce();
-            self.creditCardBin = parsedResponseModel.getBin();
+                const googlePaymentInstance = braintreeMainAdapter.getGooglePayInstance();
+                googlePaymentInstance.parseResponse(paymentData).then(function (result) {
+                    parsedResponseModel.setNonce(result.nonce);
+                    parsedResponseModel.setIsNetworkTokenized(_.get(
+                        result,
+                        ['details', 'isNetworkTokenized'],
+                        false
+                    ));
+                    parsedResponseModel.setBin(_.get(
+                        result,
+                        ['details', 'bin'],
+                        null
+                    ));
 
-            if (parsedResponseModel.getIsNetworkTokenized() === false) {
-                /* Add 3D Secure verification to payment & validate payment for non network tokenized cards */
-                self.addThreeDSecureValidator();
+                    let payload = {
+                        details: {
+                            shippingAddress: this.getShippingAddressData(),
+                            billingAddress: this.getBillingAddressData()
+                        },
+                        nonce: this.paymentMethodNonce,
+                        isNetworkTokenized: parsedResponseModel.getIsNetworkTokenized(),
+                        deviceData: braintreeMainAdapter.deviceData
+                    };
+                    payload.details.name = payload.details.shippingAddress?.name || payload.details.billingAddress?.name;
 
-                self.validatorManager.validate(self, function () {
-                    /* Set the new nonce from the 3DS verification */
-                    payload.nonce = self.paymentMethodNonce;
+                    this.email = paymentDataModel.getEmail();
+                    this.paymentMethodNonce = parsedResponseModel.getNonce();
+                    this.creditCardBin = parsedResponseModel.getBin();
 
-                    return formBuilder.build({
-                        action: self.getActionSuccess(),
-                        fields: {
-                            result: JSON.stringify(payload)
-                        }
-                    }).submit();
-                }, function () {
-                    self.paymentMethodNonce = null;
-                    self.creditCardBin = null;
-                });
-            } else {
-                formBuilder.build({
-                    action: this.getActionSuccess(),
-                    fields: {
-                        result: JSON.stringify(payload)
+                    if (parsedResponseModel.getIsNetworkTokenized() === false) {
+                        /* Add 3D Secure verification to payment & validate payment for non network tokenized cards */
+                        this.addThreeDSecureValidator();
+
+                        this.validatorManager.validate(this, function () {
+                            /* Set the new nonce from the 3DS verification */
+                            payload.nonce = this.paymentMethodNonce;
+
+                            if (!this.getSkipReview() || isCartVirtual()) {
+                                return submitReviewPage(payload, this.getElement(), 'googlepay');
+                            }
+
+                            const shippingMethod = this.shippingMethods[this.shippingMethodCode];
+                            const shippingInformation = mapGooglePayShippingInformation(payload, shippingMethod);
+                            const paymentInformation = mapGooglePayPaymentInformation(payload, shippingInformation.addressInformation.shipping_address);
+
+                            return setShippingInformation(shippingInformation, this.getStoreCode(), this.getQuoteId())
+                                .then(() => createPayment(paymentInformation, this.getStoreCode(), this.getQuoteId()))
+                                .then(() => document.location = this.getActionSuccess())
+                                .catch(function (error) {
+                                    alert(error);
+                                });
+                        }.bind(this), function () {
+                            this.paymentMethodNonce = null;
+                            this.creditCardBin = null;
+                        }.bind(this));
+
+                        resolve({
+                            transactionState: 'SUCCESS',
+                        });
+                    } else {
+                        formBuilder.build({
+                            action: this.getActionSuccess(),
+                            fields: {
+                                result: JSON.stringify(payload)
+                            }
+                        }).submit();
                     }
-                }).submit();
-            }
+                }.bind(this));
+            });
         },
 
         /**
@@ -237,7 +482,7 @@ define([
          * @return {?Object}
          */
         getShippingAddressData: function () {
-            let shippingAddress = paymentDataModel.getShippingAddress();
+            const shippingAddress = paymentDataModel.getShippingAddress();
 
             if (shippingAddress === null) {
                 return null;
@@ -261,7 +506,7 @@ define([
          * @return {?Object}
          */
         getBillingAddressData: function () {
-            let paymentMethodData = paymentDataModel.getPaymentMethodData(),
+            const paymentMethodData = paymentDataModel.getPaymentMethodData(),
                 billingAddress = _.get(paymentMethodData, ['info', 'billingAddress'], null);
 
             if (paymentMethodData === null) {

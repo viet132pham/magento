@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -147,6 +147,12 @@
         <arguments>
             <argument name="methodCode"
                       xsi:type="const">PayPal\Braintree\Model\Ui\PayPal\ConfigProvider::PAYPAL_VAULT_CODE</argument>
+        </arguments>
+    </type>
+    <type name="PayPal\Braintree\Gateway\Config\GooglePay\Config">
+        <arguments>
+            <argument name="methodCode"
+                      xsi:type="const">PayPal\Braintree\Model\GooglePay\Ui\ConfigProvider::METHOD_CODE</argument>
         </arguments>
     </type>
 
@@ -402,7 +408,7 @@
                 <item name="device_data" xsi:type="string">PayPal\Braintree\Gateway\Request\PayPal\DeviceDataBuilder</item>
                 <item name="dynamic_descriptor" xsi:type="string">PayPal\Braintree\Gateway\Request\DescriptorDataBuilder</item>
                 <item name="address" xsi:type="string">PayPal\Braintree\Gateway\Request\AddressDataBuilder</item>
-                <item name="level_2_3_processing" xsi:type="string">PayPal\Braintree\Gateway\Request\Level23ProcessingDataBuilder</item>
+                <item name="level_2_3_processing" xsi:type="string">PayPal\Braintree\Gateway\Request\PayPal\Level23ProcessingDataBuilder</item>
             </argument>
         </arguments>
     </virtualType>
@@ -438,7 +444,7 @@
                 <item name="customFields" xsi:type="string">PayPal\Braintree\Gateway\Request\CustomFieldsDataBuilder</item>
                 <item name="address" xsi:type="string">PayPal\Braintree\Gateway\Request\AddressDataBuilder</item>
                 <item name="dynamic_descriptor" xsi:type="string">PayPal\Braintree\Gateway\Request\DescriptorDataBuilder</item>
-                <item name="level_2_3_processing" xsi:type="string">PayPal\Braintree\Gateway\Request\Level23ProcessingDataBuilder</item>
+                <item name="level_2_3_processing" xsi:type="string">PayPal\Braintree\Gateway\Request\PayPal\Level23ProcessingDataBuilder</item>
             </argument>
         </arguments>
     </virtualType>
@@ -1649,12 +1655,20 @@
             </argument>
         </arguments>
     </type>
+
     <type name="Magento\Checkout\Block\Cart\Sidebar">
-        <plugin name="addAgreementsToMinicartConfig" type="PayPal\Braintree\Plugin\AddAgreementsToMinicartConfig"/>
+        <plugin name="addAgreementsToMiniCartConfig" type="PayPal\Braintree\Plugin\AddAgreementsToMiniCartConfig"/>
+        <plugin name="addPayLaterMessageConfig" type="PayPal\Braintree\Plugin\PayLaterMessageConfig"/>
     </type>
+
     <type name="Magento\Checkout\CustomerData\AbstractItem">
         <plugin name="braintreeAddFlagForVirtualProducts" type="PayPal\Braintree\Plugin\AddFlagForVirtualProducts"/>
     </type>
+
+    <type name="Magento\Checkout\CustomerData\Cart">
+        <plugin name="braintreeAddMaskedIdToCartData" type="PayPal\Braintree\Plugin\AddMaskedIdToCartData"/>
+    </type>
+
     <type name="Magento\Quote\Api\CartManagementInterface">
         <plugin name="order_cancellation" type="PayPal\Braintree\Plugin\OrderCancellation"/>
     </type>

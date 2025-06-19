@@ -26,7 +26,6 @@ define(
                 displayName: null,
                 actionSuccess: null,
                 grandTotalAmount: 0,
-                isLoggedIn: false,
                 storeCode: 'default'
             },
 
@@ -46,8 +45,8 @@ define(
                 api.setDisplayName(this.displayName);
                 api.setQuoteId(this.quoteId);
                 api.setActionSuccess(this.actionSuccess);
-                api.setIsLoggedIn(this.isLoggedIn);
                 api.setStoreCode(this.storeCode);
+                api.setPriceIncludesTax(this.priceIncludesTax);
 
                 // Attach the button
                 button.init(

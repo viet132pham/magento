@@ -1,8 +1,9 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
+declare(strict_types=1);
 namespace PayPal\Braintree\Gateway\Response;
 
 use Braintree\Transaction;
@@ -60,6 +61,7 @@ class VaultDetailsHandler extends Handler implements HandlerInterface
         $paymentToken->setExpiresAt($this->getExpirationDate($transaction));
 
         $paymentToken->setTokenDetails($this->convertDetailsToJSON([
+            'customerId' => $transaction->customerDetails->id,
             'type' => $this->getCreditCardType($transaction->creditCardDetails->cardType),
             'maskedCC' => $transaction->creditCardDetails->last4,
             'expirationDate' => $transaction->creditCardDetails->expirationDate

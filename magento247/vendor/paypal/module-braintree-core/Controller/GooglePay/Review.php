@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2020 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -12,6 +12,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\ActionInterface;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Serialize\SerializerInterface;
@@ -28,7 +29,7 @@ use PayPal\Braintree\Observer\GooglePay\DataAssignObserver as GooglePayDataAssig
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Review extends AbstractAction implements HttpGetActionInterface, HttpPostActionInterface
+class Review extends AbstractAction implements ActionInterface, HttpGetActionInterface, HttpPostActionInterface
 {
     /**
      * Request constants
@@ -46,7 +47,7 @@ class Review extends AbstractAction implements HttpGetActionInterface, HttpPostA
     /**
      * @var SerializerInterface
      */
-    protected SerializerInterface $serializer;
+    private SerializerInterface $serializer;
 
     /**
      * Constructor

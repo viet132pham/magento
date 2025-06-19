@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
  */
 declare(strict_types=1);
 
@@ -16,5 +16,5 @@ interface IsAddPaymentToVaultEnabledInterface
      * @param int|null $storeId
      * @return bool
      */
-    public function execute(string $paymentMethod, int $storeId = null): bool;
+    public function execute(string $paymentMethod, ?int $storeId = null): bool;
 }

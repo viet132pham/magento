@@ -1,9 +1,8 @@
 <?php
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright 2022 Adobe
+ * All Rights Reserved.
  */
-
 declare(strict_types=1);
 
 namespace PayPal\Braintree\Controller\Webhook;
@@ -16,6 +15,7 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\ActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\Request\InvalidRequestException;
@@ -38,6 +38,7 @@ use Psr\Log\LoggerInterface;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class FraudProtection extends Action implements
+    ActionInterface,
     CsrfAwareActionInterface,
     HttpPostActionInterface,
     HttpGetActionInterface
@@ -288,7 +289,11 @@ class FraudProtection extends Action implements
         $rejectedStatus = $this->webhookConfig->getFraudRejectOrderStatus();
         $order->setState($rejectedStatus)
             ->setStatus($rejectedStatus)
-            ->addCommentToStatusHistory(__('Payment declined for Transaction ID: "%1". %2.', $transactionReview->transactionId, $transactionReview->reviewerNote));
+            ->addCommentToStatusHistory(__(
+                'Payment declined for Transaction ID: "%1". %2.',
+                $transactionReview->transactionId,
+                $transactionReview->reviewerNote
+            ));
         $this->orderRepository->save($order);
     }
 
@@ -309,7 +314,10 @@ class FraudProtection extends Action implements
                 if ($order->getStatus() !== Order::STATE_PROCESSING) {
                     $order->setState(Order::STATE_PROCESSING)
                         ->setStatus(Order::STATE_PROCESSING)
-                        ->addCommentToStatusHistory(__('Local Payment approved for Transaction ID: "%1"', $transaction->getLastTransId()));
+                        ->addCommentToStatusHistory(__(
+                            'Local Payment approved for Transaction ID: "%1"',
+                            $transaction->getLastTransId()
+                        ));
                     $this->orderRepository->save($order);
                 }
             }
@@ -338,7 +346,10 @@ class FraudProtection extends Action implements
                 if ($order->getStatus() !== Order::STATE_CANCELED) {
                     $this->orderManagement->cancel($order->getId());
                 }
-                $order->addCommentToStatusHistory(__($statusComment . ' "%1"', $transaction->getLastTransId()));
+                $order->addCommentToStatusHistory(__(
+                    $statusComment . ' "%1"',
+                    $transaction->getLastTransId()
+                ));
                 $this->orderRepository->save($order);
             }
         }
